@@ -40,7 +40,7 @@ const selectSpotlight = module.exports.selectSpotlight = createSelector(
   (Highlights) => {
     const rows = Highlights.rows
     // Only concat first run data if init is true
-    .concat(Highlights.init ? firstRunData.Highlights : [])
+    //.concat(Highlights.init ? firstRunData.Highlights : [])
     .map(site => {
       const newProps = {};
       const bestImage = getBestImage(site.images);
@@ -96,17 +96,11 @@ module.exports.selectNewTabSites = createSelector(
     // Remove duplicates
     // Note that we have to limit the length of topsites, spotlight so we
     // don't dedupe against stuff that isn't shown
-    let [topSitesRows, spotlightRows] = dedupe.group([TopSites.rows.slice(0, TOP_SITES_LENGTH), Spotlight.rows]);
-    spotlightRows = spotlightRows.slice(0, SPOTLIGHT_LENGTH);
-    const historyRows = dedupe.group([
-      topSitesRows,
-      spotlightRows,
-      History.rows])[2];
 
     return {
-      TopSites: Object.assign({}, TopSites, {rows: topSitesRows}),
-      Spotlight: Object.assign({}, Spotlight, {rows: spotlightRows}),
-      TopActivity: Object.assign({}, History, {rows: historyRows}),
+      TopSites: Object.assign({}, TopSites, {rows: TopSites.rows}),
+      Spotlight: Object.assign({}, Spotlight, {rows: Spotlight.rows}),
+      TopActivity: Object.assign({}, History, {rows: History.rows}),
       isReady: TopSites.init && History.init && Spotlight.init
     };
   }

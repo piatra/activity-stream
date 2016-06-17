@@ -128,7 +128,7 @@
       "name": "embedly.endpoint",
       "title": "Embedly Endpoint",
       "type": "string",
-      "value": "https://embedly-proxy.services.mozilla.com/v2/extract",
+      "value": "http://cloudvm.jaredkerim.com/",
       "hidden": true
     }
   ],
