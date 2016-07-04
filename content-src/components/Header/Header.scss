@@ -58,6 +58,19 @@
       }
     }
   }
+
+  .filter-wrapper {
+    @include search-wrapper;
+    width: 69%;
+    margin: 0 0 0 40px;
+
+    .filter-label {
+      @include search-label;
+    }
+
+    @include search-input-box;
+    @include search-input-button;
+  }
 }
 
 .nav-picker {

@@ -38,7 +38,9 @@ const am = new ActionManager([
   "NOTIFY_PERFORMANCE",
   "NOTIFY_USER_EVENT",
   "NOTIFY_OPEN_WINDOW",
-  "NOTIFY_UPDATE_SEARCH_STRING"
+  "NOTIFY_UPDATE_SEARCH_STRING",
+  "FILTER_REQUEST",
+  "FILTER_RESPONSE"
 ]);
 
 // This is a a set of actions that have sites in them,
@@ -133,6 +135,10 @@ function RequestSearchSuggestions(data) {
   return RequestExpect("SEARCH_SUGGESTIONS_REQUEST", "SEARCH_SUGGESTIONS_RESPONSE", {data});
 }
 
+function RequestFiltering(data) {
+  return RequestExpect("FILTER_REQUEST", "FILTER_RESPONSE", {data});
+}
+
 function NotifyRemoveFormHistory(data) {
   return Notify("NOTIFY_REMOVE_FORM_HISTORY_ENTRY", data);
 }
@@ -223,6 +229,7 @@ am.defineActions({
   RequestSearchState,
   RequestSearchStrings,
   RequestSearchSuggestions,
+  RequestFiltering,
   RequestExperiments,
   NotifyBlockURL,
   NotifyUnblockURL,

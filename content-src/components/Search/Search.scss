@@ -1,10 +1,5 @@
 .search-wrapper {
-  cursor: default;
-  display: flex;
-  position: relative;
-  margin: $search-margin-top 0 $search-margin-bottom;
-  width: 100%;
-  height: $search-height;
+  @include search-wrapper
 
   .search-container {
     z-index: 999;
@@ -128,66 +123,10 @@
     }
   }
 
-  input {
-    border-radius: $search-border-radius 0 0 $search-border-radius;
-    flex-grow: 1;
-    margin: 0;
-    padding: 6px 12px 8px $search-input-left-label-width;
-    border: 1px solid $search-input-border-color;
-    outline: none;
-    box-shadow: none;
-
-    &:focus {
-      z-index: 1;
-      border-color: $search-blue;
-      transition: box-shadow 150ms;
-      box-shadow: 0 0 0 0.5px $search-shadow;
-    }
-
-    &:focus + button {
-      z-index: 1;
-      border-color: $search-blue;
-      transition: box-shadow 150ms;
-      box-shadow: 0 0 0 0.5px $search-shadow;
-      background-color: $search-blue;
-      background-image: url('img/glyph-forward-16-white.svg');
-      color: $white;
-    }
-  }
-
   .search-label {
-    background: url('img/glyph-search-16.svg') no-repeat center center;
-    background-size: 20px;
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: $search-input-left-label-width;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2;
+    @include search-label;
   }
 
-  button {
-    border-radius: 0 $border-radius $border-radius 0;
-    margin-left: -1px;
-    border: 1px solid $search-button-border-color;
-    width: $search-button-width;
-    padding: 0;
-    transition: box-shadow 150ms;
-    box-shadow: none;
-    background: $search-button-grey url('img/glyph-forward-16.svg') no-repeat center center;
-    background-size: 16px 16px;
-
-    &:hover {
-      z-index: 1;
-      border-color: $search-blue;
-      transition: box-shadow 150ms;
-      box-shadow: 0 0 0 0.5px $search-shadow;
-      background-color: $search-blue;
-      background-image: url('img/glyph-forward-16-white.svg');
-      color: $white;
-    }
-  }
+  @include search-input-box;
+  @include search-input-button;
 }

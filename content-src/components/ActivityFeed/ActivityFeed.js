@@ -188,6 +188,11 @@ const GroupedActivityFeed = React.createClass({
       .map(site => {
         return Object.assign({}, site, {dateDisplay: site[this.props.dateKey]});
       });
+    console.log(sites);
+    // const filteredActivity = this.props.filteredActivity;
+    // if (filteredActivity.length > 0) {
+    //   console.log("RENDER THE FILTERED STUFF");
+    // }
     const groupedSites = groupSitesByDate(sites);
     let globalCount = -1;
     return (<div className="grouped-activity-feed">

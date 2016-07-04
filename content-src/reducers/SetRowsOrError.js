@@ -22,6 +22,8 @@ module.exports = function setRowsOrError(requestType, responseType, querySize) {
           state.rows = meta.append ? prevState.rows : [];
           state.error = action.data;
         } else {
+          console.log("======I'M HERE");
+          console.log(responseType);
           state.init = true;
           state.rows = meta.append ? prevState.rows.concat(action.data) : action.data;
           state.error = false;
@@ -53,6 +55,11 @@ module.exports = function setRowsOrError(requestType, responseType, querySize) {
         break;
       case requestType === am.type("RECENT_BOOKMARKS_REQUEST") && am.type("NOTIFY_BOOKMARK_DELETE"):
         state.rows = prevState.rows.filter(val => val.bookmarkGuid !== action.data);
+        break;
+      case am.type("FILTER_RESPONSE"):
+        state.filteredActivity = action.data.filteredActivity || [];
+        console.log("FILTERED SITES: ");
+        console.log(action.data.filteredActivity);
         break;
       default:
         return prevState;

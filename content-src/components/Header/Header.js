@@ -1,5 +1,8 @@
 const React = require("react");
 const {Link} = require("react-router");
+const {connect} = require("react-redux");
+const {justDispatch} = require("selectors/selectors");
+const {actions} = require("common/action-manager");
 const classNames = require("classnames");
 
 const Header = React.createClass({
@@ -10,13 +13,19 @@ const Header = React.createClass({
     };
   },
   getInitialState() {
-    return {showDropdown: false};
+    return {showDropdown: false, searchValue: ""};
   },
   onClick() {
     if (this.props.disabled) {
       return;
     }
     this.setState({showDropdown: !this.state.showDropdown});
+  },
+  handleChange(event) {
+    this.setState({searchValue: event.target.value});
+  },
+  performSearch(searchString) {
+    this.props.dispatch(actions.RequestFiltering(searchString));
   },
   render() {
     const props = this.props;
@@ -32,7 +41,14 @@ const Header = React.createClass({
           {props.links.map(link => <li key={link.to}><Link to={link.to}>{link.title}</Link></li>)}
         </ul>
       </section>
-      <section className="spacer" />
+      <section className="spacer">
+      <form className="filter-wrapper">
+        <span className="filter-label" />
+        <input type="search" placeholder="Search your activity stream" onChange={e => this.handleChange(e)}/>
+        <button onClick={e => {e.preventDefault(); this.performSearch(this.state.searchValue);}}>
+          <span className="sr-only">Search</span>
+        </button></form>
+      </section>
       <section className="user-info">
         {props.userName && <span>
           {props.userName}
@@ -51,7 +67,7 @@ Header.propTypes = {
   icon: React.PropTypes.string,
   pathname: React.PropTypes.string.isRequired,
   links: React.PropTypes.array,
-  disabled: React.PropTypes.bool
+  disabled: React.PropTypes.bool,
 };
 
-module.exports = Header;
+module.exports = connect(justDispatch)(Header);
