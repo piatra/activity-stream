@@ -102,6 +102,11 @@ module.exports.selectNewTabSites = createSelector(
     // Note that we have to limit the length of topsites, spotlight so we
     // don't dedupe against stuff that isn't shown
     let [topSitesRows, spotlightRows] = dedupe.group([TopSites.rows.slice(0, TOP_SITES_LENGTH), Spotlight.rows]);
+
+    // find the recommended item and move it to the third spot in highlights
+    if (spotlightRows.length > 0) {
+      spotlightRows.splice(2, 0, spotlightRows.splice(spotlightRows.findIndex(element => element.recommended), 1)[0]);
+    }
     spotlightRows = spotlightRows.slice(0, SPOTLIGHT_LENGTH);
     const historyRows = dedupe.group([
       topSitesRows,
