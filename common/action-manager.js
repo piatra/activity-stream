@@ -40,7 +40,8 @@ const am = new ActionManager([
   "NOTIFY_OPEN_WINDOW",
   "NOTIFY_UPDATE_SEARCH_STRING",
   "FILTER_REQUEST",
-  "FILTER_RESPONSE"
+  "FILTER_RESPONSE",
+  "NOTIFY_SHOW_FILTERED_PAGE"
 ]);
 
 // This is a a set of actions that have sites in them,
@@ -138,7 +139,9 @@ function RequestSearchSuggestions(data) {
 function RequestFiltering(data) {
   return RequestExpect("FILTER_REQUEST", "FILTER_RESPONSE", {data});
 }
-
+function NotifyShowPage(data) {
+  return Notify("NOTIFY_SHOW_FILTERED_PAGE", data);
+}
 function NotifyRemoveFormHistory(data) {
   return Notify("NOTIFY_REMOVE_FORM_HISTORY_ENTRY", data);
 }
@@ -245,7 +248,8 @@ am.defineActions({
   NotifyUpdateSearchString,
   NotifyManageEngines,
   NotifyRemoveFormHistory,
-  NotifyCycleEngine
+  NotifyCycleEngine,
+  NotifyShowPage
 });
 
 module.exports = am;

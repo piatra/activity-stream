@@ -2,6 +2,7 @@ const React = require("react");
 const {connect} = require("react-redux");
 const {justDispatch} = require("selectors/selectors");
 const {NotifyEvent} = require("common/action-manager").actions;
+const {NotifyShowPage} = require("common/action-manager").actions;
 const GroupedActivityFeed = require("components/ActivityFeed/ActivityFeed");
 const FilteredActivity = require("components/FilteredActivity/FilteredActivity");
 const Spotlight = require("components/Spotlight/Spotlight");
@@ -9,6 +10,7 @@ const Loader = require("components/Loader/Loader");
 const classNames = require("classnames");
 const {INFINITE_SCROLL_THRESHOLD, SCROLL_TOP_OFFSET} = require("common/constants");
 const debounce = require("lodash.debounce");
+let showFilteredActivity = false;
 
 const TimelineFeed = React.createClass({
   loadMore() {
@@ -74,14 +76,35 @@ const TimelineFeed = React.createClass({
   componentWillUnmount() {
     window.removeEventListener("resize", this.onResize);
   },
+  onClick(page) {
+    this.props.dispatch(NotifyShowPage(page));
+  },
   render() {
     const props = this.props;
+    console.log(showFilteredActivity);
     return (<section className="content" ref="scrollElement" onScroll={!props.Feed.isLoading && props.Feed.canLoadMore && this.loadMoreDataIfNeeded}>
       <div ref="wrapper" className={classNames("wrapper", "show-on-init", {on: props.Feed.init})}>
-        <section>
-        <FilteredActivity className="filtered-activity"/>
+        <section className="filter-options">
+          <ul>
+            <li><a onClick={() => this.onClick("All")}> All </a></li>
+            <li><a onClick={() => this.onClick("Bookmarks")}> Bookmarks </a></li>
+            <li><a onClick={() => this.onClick("History")}> History </a></li>
+            <select name="type">
+              <option value="all">All</option>
+              <option value="videos">Videos</option>
+              <option value="articles">Articles</option>
+            </select>
+            <select name="device">
+              <option value="all">All</option>
+              <option value="desktop">Desktop</option>
+              <option value="phone">Phone</option>
+            </select>
+          </ul>
         </section>
-        {props.Spotlight ? <Spotlight page={this.props.pageName} sites={props.Spotlight.rows} /> : null }
+        <section className="filtered-activity">
+        <FilteredActivity/>
+        </section>
+        {props.Spotlight && !showFilteredActivity ? <Spotlight page={this.props.pageName} sites={props.Spotlight.rows} /> : null }
         <GroupedActivityFeed
           sites={props.Feed.rows}
           page={props.pageName}
@@ -99,7 +122,8 @@ TimelineFeed.propTypes = {
   Feed: React.PropTypes.object.isRequired,
   pageName: React.PropTypes.string.isRequired,
   loadMoreAction: React.PropTypes.func.isRequired,
-  dateKey: React.PropTypes.string.isRequired
+  dateKey: React.PropTypes.string.isRequired,
+  showFilteredActivity: React.PropTypes.bool
 };
 
 module.exports = connect(justDispatch)(TimelineFeed);

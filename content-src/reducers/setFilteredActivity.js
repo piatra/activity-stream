@@ -26,6 +26,9 @@ module.exports = function FilteredActivity() {
           state.error = false;
         }
         break;
+      case am.type("NOTIFY_SHOW_FILTERED_PAGE"):
+        state.page = action.data;
+        break;
       default:
         return prevState;
     }
