@@ -1,12 +1,12 @@
 const am = require("common/action-manager");
 
 const DEFAULTS = {
-  results: [],
+  filteredActivity: [],
   error: false,
   isLoading: false,
 };
 
-module.exports = function setFilteredActivity() {
+module.exports = function FilteredActivity() {
   return (prevState = DEFAULTS, action) => {
     const state = {};
     switch (action.type) {
@@ -16,10 +16,13 @@ module.exports = function setFilteredActivity() {
       case am.type("FILTER_RESPONSE"):
         state.isLoading = false;
         if (action.error) {
-          state.results = [];
+          state.filteredActivity = [];
           state.error = action.data;
         } else {
-          state.results = action.data.activity;
+          state.filteredBookmarks = action.data.activity.bookmarks;
+          state.filteredHistory = action.data.activity.history;
+          state.filteredPages = action.data.activity.pages;
+          state.filteredTabs = action.data.activity.tabs;
           state.error = false;
         }
         break;

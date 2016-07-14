@@ -3,6 +3,7 @@ const {connect} = require("react-redux");
 const {justDispatch} = require("selectors/selectors");
 const {NotifyEvent} = require("common/action-manager").actions;
 const GroupedActivityFeed = require("components/ActivityFeed/ActivityFeed");
+const FilteredActivity = require("components/FilteredActivity/FilteredActivity");
 const Spotlight = require("components/Spotlight/Spotlight");
 const Loader = require("components/Loader/Loader");
 const classNames = require("classnames");
@@ -77,6 +78,9 @@ const TimelineFeed = React.createClass({
     const props = this.props;
     return (<section className="content" ref="scrollElement" onScroll={!props.Feed.isLoading && props.Feed.canLoadMore && this.loadMoreDataIfNeeded}>
       <div ref="wrapper" className={classNames("wrapper", "show-on-init", {on: props.Feed.init})}>
+        <section>
+        <FilteredActivity className="filtered-activity"/>
+        </section>
         {props.Spotlight ? <Spotlight page={this.props.pageName} sites={props.Spotlight.rows} /> : null }
         <GroupedActivityFeed
           sites={props.Feed.rows}
@@ -91,6 +95,7 @@ const TimelineFeed = React.createClass({
 
 TimelineFeed.propTypes = {
   Spotlight: React.PropTypes.object,
+  FilteredActivity: React.PropTypes.object,
   Feed: React.PropTypes.object.isRequired,
   pageName: React.PropTypes.string.isRequired,
   loadMoreAction: React.PropTypes.func.isRequired,
