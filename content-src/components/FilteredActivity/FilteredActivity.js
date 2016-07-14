@@ -19,7 +19,7 @@ const FilteredActivity = React.createClass({
 });
 
 function select(state) {
-  return state.FilteredActivity
+  return state.FilteredActivity;
 }
 
 module.exports = connect(select)(FilteredActivity);
