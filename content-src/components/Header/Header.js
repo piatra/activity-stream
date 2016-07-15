@@ -25,9 +25,9 @@ const Header = React.createClass({
     this.setState({searchValue: event.target.value});
   },
   performSearch(options) {
-    let {searchString, page} = options;
+    let {searchString, page, device, type} = options;
     this.props.dispatch(actions.RequestFiltering(searchString));
-    this.props.dispatch(actions.NotifyShowPage(page));
+    this.props.dispatch(actions.NotifyShowPage({page, device, type}));
   },
   render() {
     const props = this.props;
@@ -47,7 +47,7 @@ const Header = React.createClass({
       <form className="filter-wrapper">
         <span className="filter-label" />
         <input type="search" placeholder="Search your activity stream" onChange={e => this.handleChange(e)}/>
-        <button onClick={e => {e.preventDefault(); this.performSearch({searchString: this.state.searchValue, page: "All"});}}>
+        <button onClick={e => {e.preventDefault(); this.performSearch({searchString: this.state.searchValue, page: "All", type: "All", device: "All"});}}>
           <span className="sr-only">Search</span>
         </button></form>
       </section>

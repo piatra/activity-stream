@@ -76,35 +76,35 @@ const TimelineFeed = React.createClass({
   componentWillUnmount() {
     window.removeEventListener("resize", this.onResize);
   },
-  onClick(page) {
-    this.props.dispatch(NotifyShowPage(page));
+  onClick(options) {
+    this.props.dispatch(NotifyShowPage(options));
   },
   render() {
     const props = this.props;
-    console.log(showFilteredActivity);
     return (<section className="content" ref="scrollElement" onScroll={!props.Feed.isLoading && props.Feed.canLoadMore && this.loadMoreDataIfNeeded}>
       <div ref="wrapper" className={classNames("wrapper", "show-on-init", {on: props.Feed.init})}>
         <section className="filter-options">
           <ul>
-            <li><a onClick={() => this.onClick("All")}> All </a></li>
-            <li><a onClick={() => this.onClick("Bookmarks")}> Bookmarks </a></li>
-            <li><a onClick={() => this.onClick("History")}> History </a></li>
+            <li><a onClick={() => this.onClick({page: "All"})}> All </a></li>
+            <li><a onClick={() => this.onClick({page: "Bookmarks"})}> Bookmarks </a></li>
+            <li><a onClick={() => this.onClick({page: "History"})}> History </a></li>
             <select name="type">
-              <option value="all">All</option>
-              <option value="videos">Videos</option>
-              <option value="articles">Articles</option>
+              <option onClick={() => this.onClick({type: "All"})} value="all">All</option>
+              <option onClick={() => this.onClick({type: "video"})} value="video">Video</option>
+              <option onClick={() => this.onClick({type: "html"})} value="html">Article</option>
             </select>
             <select name="device">
-              <option value="all">All</option>
-              <option value="desktop">Desktop</option>
-              <option value="phone">Phone</option>
+              <option onClick={() => this.onClick({device: "All"})} value="all">All</option>
+              <option onClick={() => this.onClick({device: "iPhone"})} value="iPhone">iPhone</option>
+              <option onClick={() => this.onClick({device: "iPad"})} value="iPad">iPad</option>
+              <option onClick={() => this.onClick({device: "MacBookPro"})} value="MacBookPro">MacBookPro</option>
             </select>
           </ul>
         </section>
         <section className="filtered-activity">
         <FilteredActivity/>
         </section>
-        {props.Spotlight && !showFilteredActivity ? <Spotlight page={this.props.pageName} sites={props.Spotlight.rows} /> : null }
+        {props.Spotlight ? <Spotlight page={this.props.pageName} sites={props.Spotlight.rows} /> : null }
         <GroupedActivityFeed
           sites={props.Feed.rows}
           page={props.pageName}

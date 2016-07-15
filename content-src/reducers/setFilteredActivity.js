@@ -27,7 +27,9 @@ module.exports = function FilteredActivity() {
         }
         break;
       case am.type("NOTIFY_SHOW_FILTERED_PAGE"):
-        state.page = action.data;
+        state.page = action.data.page || prevState.page;
+        state.type = action.data.type || prevState.type;
+        state.device = action.data.device || prevState.device;
         break;
       default:
         return prevState;
