@@ -67,7 +67,7 @@ const FilteredActivity = React.createClass({
         }
         break;
       case "All":
-      if (!history && bookmarks) {
+      if (!history && !bookmarks) {
         return;
       }
       if (type === "All" && device === "All") {
