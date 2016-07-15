@@ -47,7 +47,6 @@ const FilteredActivity = React.createClass({
         }
         if (type === "All" && device === "All") {
           console.log("history of all type and all devices");
-          console.log(history);
           history.map(item => urlsToShow.push(item.url))
           break;
         }
@@ -66,23 +65,47 @@ const FilteredActivity = React.createClass({
           break;
         }
         break;
+        case "Pages":
+          if (!pages) {
+            return;
+          }
+          if (type === "All" && device === "All") {
+            console.log("pages of all type and all devices");
+            pages.map(item => urlsToShow.push(item.url))
+            break;
+          }
+          else if (type === "All") {
+            console.log(`pages of all type and devices ${device} `);
+            pages.forEach(item => {if (item.device === params.get("device")) urlsToShow.push(item.url)});
+            break;
+          }
+          else if (device === "All") {
+            console.log(`pages of all devices and types ${type} `);
+            pages.forEach(item => {if (item.type === params.get("type")) urlsToShow.push(item.url)});
+            break;
+          } else {
+            console.log(`pages of type ${type} and devices ${device} `)
+            pages.forEach(item => {if (item.type === params.get("type") && item.device === params.get("device")) urlsToShow.push(item.url)});
+            break;
+          }
+          break;
       case "All":
-      if (!history && !bookmarks) {
+      if (!history && !bookmarks &&!pages) {
         return;
       }
       if (type === "All" && device === "All") {
-        history.concat(bookmarks).map(item => urlsToShow.push(item.url))
+        history.concat(bookmarks).concat(pages).map(item => urlsToShow.push(item.url))
         break;
       }
       else if (type === "All") {
-        history.concat(bookmarks).forEach(item => {if (item.device === params.get("device")) urlsToShow.push(item.url)});
+        history.concat(bookmarks).concat(pages).forEach(item => {if (item.device === params.get("device")) urlsToShow.push(item.url)});
         break;
       }
       else if (device === "All") {
-        history.concat(bookmarks).forEach(item => {if (item.type === params.get("type")) urlsToShow.push(item.url)});
+        history.concat(bookmarks).concat(pages).forEach(item => {if (item.type === params.get("type")) urlsToShow.push(item.url)});
         break;
       } else {
-        history.concat(bookmarks).forEach(item => {if (item.type === params.get("type") && item.device === params.get("device")) urlsToShow.push(item.url)});
+        history.concat(bookmarks).concat(pages).forEach(item => {if (item.type === params.get("type") && item.device === params.get("device")) urlsToShow.push(item.url)});
         break;
       }
       break;

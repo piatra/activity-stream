@@ -88,6 +88,7 @@ const TimelineFeed = React.createClass({
             <li><a onClick={() => this.onClick({page: "All"})}> All </a></li>
             <li><a onClick={() => this.onClick({page: "Bookmarks"})}> Bookmarks </a></li>
             <li><a onClick={() => this.onClick({page: "History"})}> History </a></li>
+            <li><a onClick={() => this.onClick({page: "Pages"})}> Pages </a></li>
             <select name="type">
               <option onClick={() => this.onClick({type: "All"})} value="all">All</option>
               <option onClick={() => this.onClick({type: "video"})} value="video">Video</option>
