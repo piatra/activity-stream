@@ -23,21 +23,21 @@ const FilteredActivity = React.createClass({
         }
         if (type === "All" && device === "All") {
           console.log("bookmarks of all type and all devices");
-          bookmarks.map(item => urlsToShow.push(item.url))
+          bookmarks.map(item => urlsToShow.push(item))
           break;
         }
         else if (type === "All") {
           console.log(`bookmarks of all type and devices ${device} `);
-          bookmarks.forEach(item => {if (item.device === params.get("device")) urlsToShow.push(item.url)});
+          bookmarks.forEach(item => {if (item.device === params.get("device")) urlsToShow.push(item)});
           break;
         }
          else if (device === "All") {
           console.log(`bookmarks of all devices and types ${type} `);
-          bookmarks.forEach(item => {if (item.type === params.get("type")) urlsToShow.push(item.url)});
+          bookmarks.forEach(item => {if (item.type === params.get("type")) urlsToShow.push(item)});
           break;
         } else {
           console.log(`bookmarks of type ${type} and devices ${device} `);
-          bookmarks.forEach(item => {if (item.type === params.get("type") && item.device === params.get("device")) urlsToShow.push(item.url)});
+          bookmarks.forEach(item => {if (item.type === params.get("type") && item.device === params.get("device")) urlsToShow.push(item)});
           break;
         }
         break;
@@ -47,21 +47,21 @@ const FilteredActivity = React.createClass({
         }
         if (type === "All" && device === "All") {
           console.log("history of all type and all devices");
-          history.map(item => urlsToShow.push(item.url))
+          history.map(item => urlsToShow.push(item))
           break;
         }
         else if (type === "All") {
           console.log(`history of all type and devices ${device} `);
-          history.forEach(item => {if (item.device === params.get("device")) urlsToShow.push(item.url)});
+          history.forEach(item => {if (item.device === params.get("device")) urlsToShow.push(item)});
           break;
         }
         else if (device === "All") {
           console.log(`history of all devices and types ${type} `);
-          history.forEach(item => {if (item.type === params.get("type")) urlsToShow.push(item.url)});
+          history.forEach(item => {if (item.type === params.get("type")) urlsToShow.push(item)});
           break;
         } else {
           console.log(`history of type ${type} and devices ${device} `)
-          history.forEach(item => {if (item.type === params.get("type") && item.device === params.get("device")) urlsToShow.push(item.url)});
+          history.forEach(item => {if (item.type === params.get("type") && item.device === params.get("device")) urlsToShow.push(item)});
           break;
         }
         break;
@@ -71,21 +71,21 @@ const FilteredActivity = React.createClass({
           }
           if (type === "All" && device === "All") {
             console.log("pages of all type and all devices");
-            pages.map(item => urlsToShow.push(item.url))
+            pages.map(item => urlsToShow.push(item))
             break;
           }
           else if (type === "All") {
             console.log(`pages of all type and devices ${device} `);
-            pages.forEach(item => {if (item.device === params.get("device")) urlsToShow.push(item.url)});
+            pages.forEach(item => {if (item.device === params.get("device")) urlsToShow.push(item)});
             break;
           }
           else if (device === "All") {
             console.log(`pages of all devices and types ${type} `);
-            pages.forEach(item => {if (item.type === params.get("type")) urlsToShow.push(item.url)});
+            pages.forEach(item => {if (item.type === params.get("type")) urlsToShow.push(item)});
             break;
           } else {
             console.log(`pages of type ${type} and devices ${device} `)
-            pages.forEach(item => {if (item.type === params.get("type") && item.device === params.get("device")) urlsToShow.push(item.url)});
+            pages.forEach(item => {if (item.type === params.get("type") && item.device === params.get("device")) urlsToShow.push(item)});
             break;
           }
           break;
@@ -94,24 +94,23 @@ const FilteredActivity = React.createClass({
         return;
       }
       if (type === "All" && device === "All") {
-        history.concat(bookmarks).concat(pages).map(item => urlsToShow.push(item.url))
+        history.concat(bookmarks).concat(pages).map(item => urlsToShow.push(item))
         break;
       }
       else if (type === "All") {
-        history.concat(bookmarks).concat(pages).forEach(item => {if (item.device === params.get("device")) urlsToShow.push(item.url)});
+        history.concat(bookmarks).concat(pages).forEach(item => {if (item.device === params.get("device")) urlsToShow.push(item)});
         break;
       }
       else if (device === "All") {
-        history.concat(bookmarks).concat(pages).forEach(item => {if (item.type === params.get("type")) urlsToShow.push(item.url)});
+        history.concat(bookmarks).concat(pages).forEach(item => {if (item.type === params.get("type")) urlsToShow.push(item)});
         break;
       } else {
-        history.concat(bookmarks).concat(pages).forEach(item => {if (item.type === params.get("type") && item.device === params.get("device")) urlsToShow.push(item.url)});
+        history.concat(bookmarks).concat(pages).forEach(item => {if (item.type === params.get("type") && item.device === params.get("device")) urlsToShow.push(item)});
         break;
       }
       break;
     }
-    console.log(urlsToShow);
-    return <div>{urlsToShow}</div>;
+    return (<div>{urlsToShow.map(item => {return <p><a href={item.url}>{item.title}</a></p>})}</div>);
   }
 });
 
