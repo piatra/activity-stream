@@ -12,3 +12,5 @@ firefox/
 config.yml
 .amo_config.json
 lib/vendor.bundle.js
+.idea
+@activity-streams-1.1.1.update.rdf

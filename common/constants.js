@@ -1,6 +1,12 @@
 module.exports = {
   // How many items per query?
-  LINKS_QUERY_LIMIT: 20,
+  LINKS_QUERY_LIMIT: 40,
+
+  // XXX
+  SPOTLIGHT_DEFAULT_LENGTH: 3,
+
+  // XXX
+  MAX_TOP_ACTIVITY_ITEMS: 10,
 
   // Time interval for for frecent links query in milliseconds (72 hours).
   FRECENT_RESULTS_TIME_LIMIT: 72 * 60 * 60 * 1000,
