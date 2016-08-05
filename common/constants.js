@@ -1,11 +1,11 @@
 module.exports = {
   // How many items per query?
-  LINKS_QUERY_LIMIT: 40,
+  LINKS_QUERY_LIMIT: 20,
 
-  // XXX
+  // Number of large Highlight tiles.
   SPOTLIGHT_DEFAULT_LENGTH: 3,
 
-  // XXX
+  // Max number of Recent Activity/More Highlights section.
   MAX_TOP_ACTIVITY_ITEMS: 10,
 
   // Time interval for for frecent links query in milliseconds (72 hours).

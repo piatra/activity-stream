@@ -3,6 +3,12 @@
 const URL = require("../../lib/vendor.bundle.js").urlParse;
 const {INFINITE_SCROLL_THRESHOLD} = require("../constants");
 
+/**
+ * Score function for URLs.
+ * See tests and `scoreEntry` comments for more insight into how the score is computed.
+ *
+ * @param {Array.<URLs>} history - User history used to assign higher score to popular domains.
+ */
 class Baseline {
   constructor(history) {
     this.domainCounts = history.reduce(this.countDomainOccurrences, new Map());
@@ -20,17 +26,21 @@ class Baseline {
     let score = this.decay(tf * idf, // Score
       // Features: Age in hours, number of visits to url, url query length, number of images, is a bookmark,
       //           has description.
-      [this.timestampToDays(entry.lastVisitDate), entry.visitCount, urlObj.query.length,
+      [this.normalizeTimestamp(entry.lastVisitDate), entry.visitCount, urlObj.query.length,
        imageCount, isBookmarked, hasDescription],
-      // Features weights: Higher values decrease the score proportional to the corresponding
-      //                   value of the feature * weight. Negative values increase score
-      //                   proportional to the value of the feature * weight.
-      // Values were hand picked by plotting the function and adjusting as desired.
+      // Features weights: Positive values decrease the score proportional to a factor of feature * weight.
+      //                   Negative values increase score proportional to a factor of feature * weight.
       [0.4, 0.7, 0.1, -0.4, -0.2, -0.1]);
 
     return Object.assign({}, entry, {score}, {host});
   }
 
+  /**
+   * Scoring function for an array of URLs.
+   *
+   * @param {Array.<URLs>} entries
+   * @returns {Array.<URLs>} sorted and with the associated score value.
+   */
   score(entries) {
     return entries.map(e => this.scoreEntry(e))
       .filter(e => e.score > 0)
@@ -40,10 +50,11 @@ class Baseline {
   }
 
   /**
+   * Reduce user history to a map of hosts and number of visits
    *
-   * @param {Map.<string, number>} result
+   * @param {Map.<string, number>} result - Accumulator
    * @param {Object} entry
-   * @returns {Map.<string, number>} result
+   * @returns {Map.<string, number>}
    */
   countDomainOccurrences(result, entry) {
     let host = entry.reversedHost.split("").reverse().join("").slice(1); // moc.buhtig. => github.com
@@ -53,16 +64,16 @@ class Baseline {
   }
 
   /**
-   * @param {Number} value - Timestamp in milliseconds.
+   * @param {Number} value
    * @returns {Number}
    */
-  timestampToDays(value) {
+  normalizeTimestamp(value) {
     if (!value) {
       return 0;
     }
 
     let r = (Date.now() - value) / (1e3 * 3600 * 24);
-    return parseFloat(r.toFixed(2));
+    return parseFloat(r.toFixed(4));
   }
 
   /**
@@ -83,7 +94,7 @@ class Baseline {
     return b.score - a.score;
   }
 
-  dedupHosts(e, idx, arr) { // filter out consecutive links from same host
+  dedupHosts(e, idx, arr) {
     if (idx > 0 && arr[idx - 1].host === e.host) { // same host
       return 0;
     }
