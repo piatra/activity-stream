@@ -168,7 +168,7 @@ function RequestExperiments() {
   return RequestExpect("EXPERIMENTS_REQUEST", "EXPERIMENTS_RESPONSE");
 }
 
-function RequestHistoryItems() {
+function RequestWeightedHighlights() {
   return RequestExpect("WEIGHTED_HIGHLIGHTS_REQUEST", "WEIGHTED_HIGHLIGHTS_RESPONSE");
 }
 
@@ -252,7 +252,7 @@ am.defineActions({
   RequestSearchStrings,
   RequestSearchSuggestions,
   RequestExperiments,
-  RequestHistoryItems,
+  RequestWeightedHighlights,
   NotifyBlockURL,
   NotifyUnblockURL,
   NotifyUnblockAll,

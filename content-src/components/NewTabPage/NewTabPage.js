@@ -89,7 +89,7 @@ const NewTabPage = React.createClass({
           </section>
 
           <section className="bottom-links-container">
-            <Link className="bottom-link" to="/timeline"><span className="icon icon-spacer icon-activity-stream" /> See recent activity</Link>
+            <Link className="bottom-link" to="/timeline"><span className="icon icon-spacer icon-activity-stream" /> See all activity</Link>
             <span className="link-wrapper-right">
               <a
                 ref="settingsLink"
