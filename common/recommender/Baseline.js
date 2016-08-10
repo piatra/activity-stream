@@ -26,11 +26,10 @@ class Baseline {
     let score = this.decay(tf * idf, // Score
       // Features: Age in hours, number of visits to url, url query length, number of images, is a bookmark,
       //           has description.
-      [this.normalizeTimestamp(entry.lastVisitDate), entry.visitCount, urlObj.query.length,
-       imageCount, isBookmarked, hasDescription],
+      [urlObj.query.length, imageCount, isBookmarked, hasDescription],
       // Features weights: Positive values decrease the score proportional to a factor of feature * weight.
       //                   Negative values increase score proportional to a factor of feature * weight.
-      [0.4, 0.7, 0.1, -0.4, -0.2, -0.1]);
+      [0.1, -0.4, -0.2, -0.1]);
 
     return Object.assign({}, entry, {score}, {host});
   }

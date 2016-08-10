@@ -39,6 +39,8 @@ const ActivityFeedItem = React.createClass({
     if (this.props.displayMoreHighlights) {
       return (<div>
         <p ref="description">{this.props.description}</p>
+        <p>visits: {this.props.visitCount}</p>
+        <p>score: {this.props.score}</p>
       </div>);
     }
 
