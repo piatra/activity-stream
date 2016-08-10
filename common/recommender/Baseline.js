@@ -19,17 +19,20 @@ class Baseline {
     let host = URL(entry.url).host;
     let tf = Math.max(entry.visitCount, 1);
     let idf = Math.log(this.domainCounts.size / Math.max(1, this.domainCounts.get(host)));
-    let imageCount = entry.images ? entry.images.length : 0;
     let isBookmarked = entry.bookmarkId > 0 ? 1 : 0;
-    let hasDescription = entry.title !== entry.description ? 1 : 0;
+    let hasDescription = (entry.title !== entry.description && entry.description) ? 1 : 0;
+    let hasImages = 0;
+    if (entry.images) {
+      hasImages = entry.images.length ? 1 : 0;
+    }
 
     let score = this.decay(tf * idf, // Score
       // Features: Age in hours, number of visits to url, url query length, number of images, is a bookmark,
       //           has description.
-      [urlObj.query.length, imageCount, isBookmarked, hasDescription],
+      [urlObj.query.length, hasImages, isBookmarked, hasDescription],
       // Features weights: Positive values decrease the score proportional to a factor of feature * weight.
       //                   Negative values increase score proportional to a factor of feature * weight.
-      [0.1, -0.4, -0.2, -0.1]);
+      [0.1, -0.5, -1, -0.3]);
 
     return Object.assign({}, entry, {score}, {host});
   }

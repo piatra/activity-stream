@@ -1,6 +1,6 @@
 module.exports = {
   // How many items per query?
-  LINKS_QUERY_LIMIT: 30,
+  LINKS_QUERY_LIMIT: 20,
 
   // Number of large Highlight tiles.
   SPOTLIGHT_DEFAULT_LENGTH: 3,
