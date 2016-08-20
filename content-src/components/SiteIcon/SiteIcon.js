@@ -50,7 +50,6 @@ const SiteIcon = React.createClass({
           src={site.favicon}
           onError={this.handleFavicon}
           onLoad={this.handleFavicon} />
-        <span ref="fallback" className="site-icon-fallback" style={fallbackStyle} hidden={!showFallback} data-first-letter={site.firstLetter} />
       </div>
       <div ref="title" hidden={!showTitle} className="site-icon-title">{site.label}</div>
     </div>);

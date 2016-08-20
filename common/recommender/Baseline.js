@@ -15,6 +15,7 @@ class Baseline {
   constructor(history, options = {}) {
     this.domainCounts = history.reduce(this.countDomainOccurrences, new Map());
     this.options = options;
+    this.simplePrefs = options.simplePrefs;
   }
 
   scoreEntry(entry) {
@@ -38,8 +39,54 @@ class Baseline {
     return Object.assign({}, entry, {score}, {host});
   }
 
-  updateOptions(options) {
-    this.options = options;
+  phi(entry) {
+    const urlObj = URL(entry.url);
+    const host = URL(entry.url).host;
+    const tf = Math.max(entry.visitCount, 1);
+    const idf = Math.log(this.domainCounts.size / Math.max(1, this.domainCounts.get(host)));
+    const imageCount = entry.images ? entry.images.length : 0;
+    const isBookmarked = entry.bookmarkId > 0 ? 1 : 0;
+    const hasDescription = entry.title !== entry.description ? 1 : 0;
+
+    return [this.normalizeTimestamp(entry.lastVisitDate), entry.visitCount, urlObj.query.length,
+            imageCount, isBookmarked, hasDescription];
+  }
+
+  updateOptions(options = {}) {
+    const updateWeights = options.updateWeights;
+    const highlightsCoefficients = options.highlightsCoefficients;
+
+    console.log("update weights", updateWeights);
+    if (updateWeights >= 0) {
+      this._updateWeights(updateWeights);
+    }
+
+    if (highlightsCoefficients) {
+      this.options.highlightsCoefficients = highlightsCoefficients;
+    }
+  }
+
+  _updateWeights(position) {
+    const sensitivity = 0.05;
+
+    const features = this._top.slice(0, 3).map(entry => this.phi(entry));
+    console.log("top highglights", features);
+    const avg = features[0].map((e, i) => {
+      return (e + features[1][i] + features[2][i]) / 3;
+    });
+    console.log("average", avg);
+    const adjustment = this.phi(this._top[position]).map((e, i) => {
+      return (e - avg[i]) * sensitivity;
+    });
+
+    console.log("adjust weights by", adjustment);
+    const coef = this.options.highlightsCoefficients.map((c, i) => {
+      return c - adjustment[i];
+    });
+
+    console.log("new COEFFICIENTS", coef);
+    this.options.highlightsCoefficients = coef;
+    this.simplePrefs.prefs.weightedHighlightsCoefficients = coef.join(" ");
   }
 
   /**
@@ -49,10 +96,13 @@ class Baseline {
    * @returns {Array.<URLs>} sorted and with the associated score value.
    */
   score(entries) {
-    return entries.map(entry => this.scoreEntry(entry))
+    const results = entries.map(entry => this.scoreEntry(entry))
       .sort(this.sortDescByScore)
-      .filter(this.dedupeHosts)
-      .slice(0, INFINITE_SCROLL_THRESHOLD);
+      .filter(this.dedupeHosts);
+
+    this._top = results;
+
+    return results;
   }
 
   /**

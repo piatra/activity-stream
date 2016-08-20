@@ -10,7 +10,8 @@ class Recommender {
   }
 
   scoreEntries(entries) {
-    return this.recommender.score(entries);
+    const res = this.recommender.score(entries);
+    return res;
   }
 
   updateOptions(options) {

@@ -47,7 +47,8 @@ const am = new ActionManager([
   "PREFS_REQUEST",
   "PREFS_RESPONSE",
   "NOTIFY_UPDATE_PREF",
-  "PREF_CHANGED_RESPONSE"
+  "PREF_CHANGED_RESPONSE",
+  "NOTIFY_UPDATE_WEIGHTS"
 ]);
 
 // This is a a set of actions that have sites in them,
@@ -155,6 +156,11 @@ function NotifyRemoveFormHistory(data) {
 
 function NotifyCycleEngine(data) {
   return Notify("SEARCH_CYCLE_CURRENT_ENGINE_REQUEST", data);
+}
+
+function NotifyUpdateWeights(data) {
+  console.log("update weights with ", data);
+  return Notify("NOTIFY_UPDATE_WEIGHTS", data);
 }
 
 function NotifyManageEngines() {
@@ -274,7 +280,8 @@ am.defineActions({
   NotifyCycleEngine,
   NotifyBlockRecommendation,
   NotifyToggleRecommendations,
-  NotifyUpdatePref
+  NotifyUpdatePref,
+  NotifyUpdateWeights
 });
 
 module.exports = am;
