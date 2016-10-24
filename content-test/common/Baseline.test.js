@@ -169,7 +169,7 @@ describe("Baseline", () => {
     let items = baseline.dedupe(fakeUrlsWithScore);
     assert.ok(items[0].score > items[1].score);
     assert.ok(items[1].score > items[2].score);
-    assert.equal(items[1].score, 0.8);
+    assert.equal(items[1].score, 0.3);
     assert.equal(items[3].score, 1);
   });
 
@@ -194,7 +194,7 @@ describe("Baseline", () => {
       {host: "diff.com", images: [{size: 1000, width: 300, height: 300, url: "http://www.diffimage.jpg"}], score: 1}
     ];
     let items = baseline.dedupe(fakeUrlsWithScore);
-    assert.equal(items[3].score, 0.8);
+    assert.equal(items[3].score, 0.3);
   });
 
   it("should decrease by the right amount", () => {
@@ -202,13 +202,14 @@ describe("Baseline", () => {
     let items = baseline.dedupe(fakeUrlsWithScore);
     // Items 1 and 2 are both github links so second one gets a lower score.
     assert.equal(items[1].score, 1);
-    assert.equal(items[2].score, 0.8);
+    assert.equal(items[2].score, 0.3);
     assert.equal(items[3].score, 1);
   });
 
   it("should rank websites visited a long time ago lower", () => {
-    let items = baseline.score(fakeUrls);
-    assert.equal(items[items.length - 2].title, "Old link");
+    let oldLink = baseline.score(fakeUrls)
+                    .filter(entry => entry.title === "Old link")[0];
+    assert.isTrue(oldLink.score < 0.05);
   });
 
   it("should rank websites with a lot of visits lower", () => {
