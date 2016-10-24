@@ -297,7 +297,7 @@ class Baseline {
    *  @param {Array} entries - scored and sorted highlight items.
    */
   dedupe(entries) {
-    let penalty = 0.8;
+    let penalty = 0.3;
 
     if (entries.length < 2) {
       return entries;
@@ -308,7 +308,7 @@ class Baseline {
         curr.score *= penalty;
         penalty -= 0.2;
       } else {
-        penalty = 0.8;
+        penalty = 0.3;
       }
 
       return curr;
