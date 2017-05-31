@@ -749,6 +749,52 @@ Links.prototype = {
   }),
 
   /**
+   * XXX
+   */
+  getBookmarks: Task.async(function*(options = {limit: 3}) {
+    let {limit} = options;
+
+    const columns = [
+      "bookmarkDateCreated",
+      "bookmarkGuid",
+      "bookmarkId",
+      "bookmarkTitle",
+      "frecency",
+      "guid",
+      "type",
+      "lastModified",
+      "lastVisitDate",
+      "title",
+      "url",
+      "visitCount"
+    ];
+
+    // let sqlQuery = `SELECT * FROM moz_bookmarks b, moz_places p
+    //                 WHERE type = :type
+    //                 AND b.fk = p.id
+    //                 LIMIT ${limit}`;
+
+    let sqlQuery = `SELECT p.url as url,
+                           p.guid as guid,
+                           p.title as title,
+                           p.frecency as frecency,
+                           p.visit_count as visitCount,
+                           p.last_visit_date / 1000 as lastVisitDate,
+                           b.id as bookmarkId,
+                           "bookmark" as type,
+                           b.guid as bookmarkGuid,
+                           b.title as bookmarkTitle,
+                           b.lastModified / 1000 as lastModified,
+                           b.dateAdded / 1000 as bookmarkDateCreated
+                    FROM moz_bookmarks b, moz_places p
+                    WHERE type = :type
+                    and b.fk = p.id
+                    LIMIT ${limit}`;
+
+    return yield this.executePlacesQuery(sqlQuery, {columns, params: {type: Bookmarks.TYPE_BOOKMARK}});
+  }),
+
+  /**
    * Get all history items from the past 90 days.
    * Used to determine frequency of domain visits.
    */

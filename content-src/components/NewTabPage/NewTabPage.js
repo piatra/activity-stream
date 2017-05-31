@@ -2,6 +2,7 @@ const React = require("react");
 const {connect} = require("react-redux");
 const {selectNewTabSites} = require("common/selectors/selectors");
 const TopSites = require("components/TopSites/TopSites");
+const Bookmarks = require("components/Bookmarks/Bookmarks");
 const Spotlight = require("components/Spotlight/Spotlight");
 const PocketStories = require("components/PocketStories/PocketStories");
 const Search = require("components/Search/Search");
@@ -119,6 +120,9 @@ const NewTabPage = React.createClass({
                 prefs={props.Prefs.prefs} />
             </section>
           }
+          <section>
+            <Bookmarks {...props} />
+          </section>
         </div>
       </div>
       <PreferencesPane Prefs={props.Prefs} />

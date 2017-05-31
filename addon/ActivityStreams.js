@@ -76,6 +76,7 @@ function ActivityStreams(metadataStore, tabTracker, telemetrySender, options = {
     options.rng
   );
   this._searchProvider = this.options.searchProvider || new SearchProvider();
+
   this._feeds = new FeedController({
     feeds,
     broadcast: this.broadcast.bind(this),
