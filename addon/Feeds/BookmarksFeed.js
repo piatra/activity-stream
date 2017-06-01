@@ -46,6 +46,8 @@ module.exports = class BookmarksFeed extends Feed {
       // Get metadata from PreviewProvider
       links = yield this.options.getCachedMetadata(links, "BOOKMARKS_RESPONSE");
 
+      console.log("response is ", links);
+
       this.missingData = false;
 
       // Get screenshots if we are missing images
@@ -70,6 +72,7 @@ module.exports = class BookmarksFeed extends Feed {
   }
 
   onAction(state, action) {
+    // console.log("BOOKMARKS FEED", action.type);
     switch (action.type) {
       case am.type("APP_INIT"):
         // When the app inititalizes refresh the data. TODO
@@ -78,6 +81,9 @@ module.exports = class BookmarksFeed extends Feed {
       case am.type("RECEIVE_BOOKMARK_ADDED"):
         // We always want new bookmarks
         this.refresh("a bookmark was added");
+        break;
+      case am.type("RECEIVE_PLACES_CHANGES"):
+        this.refresh("a bookmark was removed");
         break;
       case am.type("SCREENSHOT_UPDATED"):
         if (this.missingData) {

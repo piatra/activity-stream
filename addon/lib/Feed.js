@@ -47,9 +47,9 @@ module.exports = class Feed {
 
       this.getData()
         .then(action => {
+          console.log("got new data");
           this.state.inProgress = false;
           this.state.lastUpdated = new Date().getTime();
-          console.log("feed dispatch", action);
           this.store.dispatch(action);
           resolve();
         })

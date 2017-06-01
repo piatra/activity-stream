@@ -769,11 +769,6 @@ Links.prototype = {
       "visitCount"
     ];
 
-    // let sqlQuery = `SELECT * FROM moz_bookmarks b, moz_places p
-    //                 WHERE type = :type
-    //                 AND b.fk = p.id
-    //                 LIMIT ${limit}`;
-
     let sqlQuery = `SELECT p.url as url,
                            p.guid as guid,
                            p.title as title,
@@ -789,9 +784,13 @@ Links.prototype = {
                     FROM moz_bookmarks b, moz_places p
                     WHERE type = :type
                     and b.fk = p.id
+                    ORDER BY b.lastModified DESC
                     LIMIT ${limit}`;
 
-    return yield this.executePlacesQuery(sqlQuery, {columns, params: {type: Bookmarks.TYPE_BOOKMARK}});
+    let result = yield this.executePlacesQuery(sqlQuery, {columns, params: {type: Bookmarks.TYPE_BOOKMARK}});
+    console.log("PlacesProvider", result);
+
+    return result;
   }),
 
   /**

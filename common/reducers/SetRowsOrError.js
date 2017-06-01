@@ -46,6 +46,7 @@ module.exports = function setRowsOrError(requestType, responseType, querySize) {
         });
         break;
       case am.type("RECEIVE_BOOKMARK_REMOVED"):
+        console.log("Bookmark removed. prev state => ", state);
         state.rows = prevState.rows.map(site => {
           if (site.url === action.data.url) {
             const frecency = typeof action.data.frecency !== "undefined" ? action.data.frecency : site.frecency;
@@ -85,6 +86,7 @@ module.exports = function setRowsOrError(requestType, responseType, querySize) {
       default:
         return prevState;
     }
+    console.log(prevState, "settings state to ", state);
     return Object.assign({}, prevState, state);
   };
 };
