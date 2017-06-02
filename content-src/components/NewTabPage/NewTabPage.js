@@ -126,7 +126,7 @@ const NewTabPage = React.createClass({
             <section>
               <Bookmarks placeholder={!this.props.isReady} page={PAGE_NAME}
                          length={HIGHLIGHTS_LENGTH} sites={props.Bookmarks.rows}
-                         prefs={props.Prefs.prefs} isCollapsed={props.Prefs.prefs.collapseBookmarks} />
+                         prefs={props.Prefs.prefs} />
             </section>
           }
         </div>

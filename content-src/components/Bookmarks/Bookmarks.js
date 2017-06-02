@@ -75,6 +75,8 @@ const Bookmarks = React.createClass({
     const isAnimating = this.state.isAnimating;
     const sites = this.props.sites.filter(site => site.bookmarkGuid);
 
+    console.log("Bookmarks", this.props.prefs.collapseBookmarks);
+
     return (<section className="section-container">
       <h3 className="section-title" ref="section-title" onClick={this.handleHeaderClick}>
         Bookmarks
