@@ -97,7 +97,7 @@ SpotlightItem.propTypes = {
   index: React.PropTypes.number,
   url: React.PropTypes.string.isRequired,
   bestImage: React.PropTypes.object,
-  title: React.PropTypes.string.isRequired,
+  // title: React.PropTypes.string.isRequired,
   description: React.PropTypes.string,
   onClick: React.PropTypes.func,
   dispatch: React.PropTypes.func.isRequired,

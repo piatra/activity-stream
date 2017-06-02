@@ -208,6 +208,12 @@
       "title": "Collapse the Highlights on the New Tab page leaving only section title visible",
       "type": "bool",
       "value": false
+    },
+    {
+      "name": "collapseBookmarks",
+      "title": "XXX",
+      "type": "bool",
+      "value": false
     }
   ],
   "repository": "mozilla/activity-stream",

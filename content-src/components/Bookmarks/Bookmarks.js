@@ -11,29 +11,6 @@ const {injectIntl} = require("react-intl");
 // const {FormattedMessage} = require("react-intl");
 const {SpotlightItem} = require("components/Spotlight/Spotlight");
 
-const BookmarkItem = React.createClass({
-  getInitialState() {
-    return {
-      showContextMenu: false,
-      activeTile: null,
-      dragOver: false
-    };
-  },
-  getDefaultProps() {
-    return {
-      onClick() {},
-      onEdit() {},
-      editMode: false
-    };
-  },
-  render() {
-    return <button>Bookmarks</button>;
-  }
-});
-
-// XXX TODO
-BookmarkItem.propTypes = {};
-
 const PlaceholderBookmarks = React.createClass({
   render() {
     return <div className="bookmarks-placeholder">You don't have any bookmarks yet.</div>;
@@ -82,16 +59,20 @@ const Bookmarks = React.createClass({
     );
   },
   handleHeaderClick() {
+    console.log("xxx handle click");
     this.setState({isAnimating: true});
-    this.props.dispatch(actions.NotifyPrefChange("collapseHighlights", !this.props.prefs.collapseHighlights));
+    this.props.dispatch(actions.NotifyPrefChange("collapseBookmarks", !this.props.prefs.collapseBookmarks));
   },
   handleTransitionEnd() {
+    console.log("xxx transition end");
     this.setState({isAnimating: false});
   },
   render() {
-    const isCollapsed = this.props.prefs.collapseHighlights;
+    const isCollapsed = this.props.prefs.collapseBookmarks;
     const isAnimating = this.state.isAnimating;
     const sites = this.props.sites.filter(site => site.bookmarkGuid);
+
+    console.log("xxx render animating=", isAnimating, "collapsed", isCollapsed);
 
     return (<section className="spotlight">
       <h3 className="section-title" ref="section-title" onClick={this.handleHeaderClick}>
@@ -107,5 +88,4 @@ const Bookmarks = React.createClass({
 
 module.exports = connect(justDispatch)(injectIntl(Bookmarks));
 module.exports.Bookmarks = Bookmarks;
-module.exports.BookmarkItem = BookmarkItem;
 module.exports.PlaceholderBookmarks = PlaceholderBookmarks;

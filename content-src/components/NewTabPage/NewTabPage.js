@@ -120,11 +120,13 @@ const NewTabPage = React.createClass({
                 prefs={props.Prefs.prefs} />
             </section>
           }
-          <section>
-            <Bookmarks placeholder={!this.props.isReady} page={PAGE_NAME}
-                       length={HIGHLIGHTS_LENGTH} sites={props.Bookmarks.rows}
-                       prefs={props.Prefs.prefs} />
-          </section>
+          {true &&
+            <section>
+              <Bookmarks placeholder={!this.props.isReady} page={PAGE_NAME}
+                         length={HIGHLIGHTS_LENGTH} sites={props.Bookmarks.rows}
+                         prefs={props.Prefs.prefs} />
+            </section>
+          }
         </div>
       </div>
       <PreferencesPane Prefs={props.Prefs} />
