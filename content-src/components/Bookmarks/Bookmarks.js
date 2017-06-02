@@ -7,9 +7,10 @@ const classNames = require("classnames");
 // const LinkMenuButton = require("components/LinkMenuButton/LinkMenuButton");
 // const {PlaceholderSiteIcon, SiteIcon} = require("components/SiteIcon/SiteIcon");
 // const {prettyUrl} = require("lib/utils");
-const {injectIntl} = require("react-intl");
+// const {injectIntl} = require("react-intl");
 // const {FormattedMessage} = require("react-intl");
 const {SpotlightItem} = require("components/Spotlight/Spotlight");
+const getBestImage = require("common/getBestImage");
 
 const PlaceholderBookmarks = React.createClass({
   render() {
@@ -52,6 +53,7 @@ const Bookmarks = React.createClass({
         key={site.guid || site.cache_key || i}
         page={this.props.page}
         source="FEATURED"
+        bestImage={getBestImage(site.images)}
         onClick={this.onClickFactory(i, site)}
         dispatch={this.props.dispatch}
         {...site}
@@ -59,33 +61,39 @@ const Bookmarks = React.createClass({
     );
   },
   handleHeaderClick() {
-    console.log("xxx handle click");
     this.setState({isAnimating: true});
     this.props.dispatch(actions.NotifyPrefChange("collapseBookmarks", !this.props.prefs.collapseBookmarks));
   },
   handleTransitionEnd() {
-    console.log("xxx transition end");
     this.setState({isAnimating: false});
+  },
+  componentWillReceiveProps(nextProps) {
+    console.log("new props", nextProps);
   },
   render() {
     const isCollapsed = this.props.prefs.collapseBookmarks;
     const isAnimating = this.state.isAnimating;
     const sites = this.props.sites.filter(site => site.bookmarkGuid);
 
-    console.log("xxx render animating=", isAnimating, "collapsed", isCollapsed);
-
-    return (<section className="spotlight">
+    return (<section className="section-container">
       <h3 className="section-title" ref="section-title" onClick={this.handleHeaderClick}>
         Bookmarks
         <span className={classNames("icon", {"icon-arrowhead-down": !isCollapsed, "icon-arrowhead-up": isCollapsed})} />
       </h3>
-      <ul ref="spotlight-list" className={classNames("spotlight-list", {"collapsed": isCollapsed, "animating": isAnimating})} onTransitionEnd={this.handleTransitionEnd}>
+      <ul ref="bookmarks-list" className={classNames("bookmarks-list", {"collapsed": isCollapsed, "animating": isAnimating})} onTransitionEnd={this.handleTransitionEnd}>
         {sites.length ? this.renderSiteList() : <PlaceholderBookmarks />}
       </ul>
     </section>);
   }
 });
 
-module.exports = connect(justDispatch)(injectIntl(Bookmarks));
+Bookmarks.propTypes = {
+  page: React.PropTypes.string.isRequired,
+  sites: React.PropTypes.array.isRequired,
+  length: React.PropTypes.number,
+  prefs: React.PropTypes.object
+};
+
+module.exports = connect(justDispatch)(Bookmarks);
 module.exports.Bookmarks = Bookmarks;
 module.exports.PlaceholderBookmarks = PlaceholderBookmarks;

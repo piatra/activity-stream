@@ -82,7 +82,9 @@ const NewTabPage = React.createClass({
   },
   render() {
     const props = this.props;
-    const {showSearch, showTopSites, showPocket, showHighlights, showMoreTopSites} = props.Prefs.prefs;
+    const {showSearch, showTopSites, showPocket, showHighlights, showBookmarks, showMoreTopSites} = props.Prefs.prefs;
+
+    console.log("new tab re render, pref=", props.Prefs.prefs.collapseBookmarks);
 
     return (<main className="new-tab">
       <div className={classNames("new-tab-wrapper", {"show-highlights": showHighlights})}>
@@ -120,11 +122,11 @@ const NewTabPage = React.createClass({
                 prefs={props.Prefs.prefs} />
             </section>
           }
-          {true &&
+          {showBookmarks &&
             <section>
               <Bookmarks placeholder={!this.props.isReady} page={PAGE_NAME}
                          length={HIGHLIGHTS_LENGTH} sites={props.Bookmarks.rows}
-                         prefs={props.Prefs.prefs} />
+                         prefs={props.Prefs.prefs} isCollapsed={props.Prefs.prefs.collapseBookmarks} />
             </section>
           }
         </div>
@@ -138,6 +140,7 @@ NewTabPage.propTypes = {
   TopSites: React.PropTypes.object.isRequired,
   PocketStories: React.PropTypes.object.isRequired,
   Highlights: React.PropTypes.object.isRequired,
+  Bookmarks: React.PropTypes.object.isRequired,
   Experiments: React.PropTypes.object.isRequired,
   Prefs: React.PropTypes.object.isRequired,
   isReady: React.PropTypes.bool.isRequired,
