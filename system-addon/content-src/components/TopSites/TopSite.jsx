@@ -6,7 +6,7 @@ const LinkMenu = require("content-src/components/LinkMenu/LinkMenu");
 const {TOP_SITES_SOURCE, TOP_SITES_CONTEXT_MENU_OPTIONS, MIN_RICH_FAVICON_SIZE, MIN_CORNER_FAVICON_SIZE} = require("./TopSitesConstants");
 
 const TopSiteLink = props => {
-  const {link, title} = props;
+  const {link, title, screenshotRequestFailed, screenshotPreview} = props;
   const topSiteOuterClassName = `top-site-outer${props.className ? ` ${props.className}` : ""}`;
   const {tippyTopIcon, faviconSize} = link;
   const letterFallback = title[0];
@@ -15,27 +15,40 @@ const TopSiteLink = props => {
   let showSmallFavicon = false;
   let smallFaviconStyle;
   let smallFaviconFallback;
-  if (tippyTopIcon || faviconSize >= MIN_RICH_FAVICON_SIZE) {
-    // styles and class names for top sites with rich icons
-    imageClassName = "top-site-icon rich-icon";
-    imageStyle = {
-      backgroundColor: link.backgroundColor,
-      backgroundImage: `url(${tippyTopIcon || link.favicon})`
-    };
-  } else {
-    // styles and class names for top sites with screenshot + small icon in top left corner
-    imageClassName = `screenshot${link.screenshot ? " active" : ""}`;
-    imageStyle = {backgroundImage: link.screenshot ? `url(${link.screenshot})` : "none"};
+  // If the screenshot request failed use letter fallback.
+  if (!screenshotRequestFailed) {
+    // Preview image priority: custom screenshot, tippytop or rich icon,
+    // default screenshot, letter fallback
+    if (screenshotPreview || link.customScreenshotURL) {
+      // styles and class names for top sites with rich icons
+      imageClassName = "top-site-icon rich-icon";
+      imageStyle = {
+        backgroundColor: link.backgroundColor,
+        backgroundImage: `url(${screenshotPreview || link.screenshot})`
+      };
+    } else if (tippyTopIcon || faviconSize >= MIN_RICH_FAVICON_SIZE) {
+      // styles and class names for top sites with rich icons
+      imageClassName = "top-site-icon rich-icon";
+      imageStyle = {
+        backgroundColor: link.backgroundColor,
+        backgroundImage: `url(${tippyTopIcon || link.favicon})`
+      };
+    } else {
+      // styles and class names for top sites with screenshot + small icon in top left corner
+      imageClassName = `screenshot${link.screenshot ? " active" : ""}`;
+      imageStyle = {backgroundImage: link.screenshot ? `url(${link.screenshot})` : "none"};
 
-    // only show a favicon in top left if it's greater than 16x16
-    if (faviconSize >= MIN_CORNER_FAVICON_SIZE) {
-      showSmallFavicon = true;
-      smallFaviconStyle = {backgroundImage:  `url(${link.favicon})`};
-    } else if (link.screenshot) {
-      // Don't show a small favicon if there is no screenshot, because that
-      // would result in two fallback icons
-      showSmallFavicon = true;
-      smallFaviconFallback = true;
+      // only show a favicon in top left if it's greater than 16x16
+      if (faviconSize >= MIN_CORNER_FAVICON_SIZE) {
+        showSmallFavicon = true;
+        smallFaviconStyle = {backgroundImage: `url(${link.favicon})`};
+      } else if (link.screenshot && !link.customScreenshotURL) {
+        // Don't show a small favicon if there is no screenshot, because that
+        // would result in two fallback icons.
+        // Don't show a small favicon if user has set a custom screenshot.
+        showSmallFavicon = true;
+        smallFaviconFallback = true;
+      }
     }
   }
   return (<li className={topSiteOuterClassName} key={link.guid || link.url}>

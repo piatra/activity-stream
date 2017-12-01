@@ -153,7 +153,7 @@
       offset-inline-start: 0;
       height: 100%;
       width: 100%;
-      background-size: $rich-icon-size;
+      background-size: cover;
     }
 
     .default-icon {
@@ -315,6 +315,7 @@
   .edit-topsites-inner-wrapper {
     margin: 0;
     padding: 15px 30px;
+    flex: 1 1 auto;
   }
 
   .show-more,
@@ -344,10 +345,39 @@ section.top-sites:not(.collapsed):hover {
 }
 
 .topsite-form {
+  .topsite-form-container {
+    display: flex;
+    padding: 30px;
+  }
+
+  .top-site-outer {
+    margin: 0;
+
+    .icon-pin-small {
+      display: none;
+    }
+  }
+
+  .edit-topsites-image-preview {
+    padding-top: 15px;
+    flex: 1 1 auto;
+    text-align: right;
+
+    &:dir(rtl) {
+      text-align: left;
+    }
+  }
+
+  .form-centered {
+    .form-wrapper {
+      max-width: 350px;
+      margin: 0 auto;
+    }
+  }
+
   .form-wrapper {
-    margin: auto;
-    max-width: 350px;
-    padding: 15px 0;
+    max-width: 300px;
+    padding: 0 30px;
 
     .field {
       position: relative;
@@ -360,6 +390,50 @@ section.top-sites:not(.collapsed):hover {
 
     .section-title {
       margin-bottom: 5px;
+    }
+
+    .enable-custom-image-input {
+      margin-top: 10px;
+    }
+
+    .custom-image-input-container {
+      position: relative;
+
+      .loading-container {
+        background: #fff;
+        width: 16px;
+        height: 16px;
+        overflow: hidden;
+        position: absolute;
+        top: 15px;
+        right: 3px;
+
+        &:dir(rtl) {
+          right: auto;
+          left: 3px;
+        }
+      }
+
+      .loading-animation {
+        @keyframes tab-throbber-animation {
+          100% { transform: translateX(-960px); }
+        }
+
+        @keyframes tab-throbber-animation-rtl {
+          100% { transform: translateX(960px); }
+        }
+
+        width: 960px;
+        height: 16px;
+        -moz-context-properties: fill;
+        fill: #84c1ff;
+        background-image: url("chrome://browser/skin/tabbrowser/loading.svg");
+        animation: tab-throbber-animation 1.05s steps(60) infinite;
+
+        &:dir(rtl) {
+          animation-name: tab-throbber-animation-rtl;
+        }
+      }
     }
 
     input {

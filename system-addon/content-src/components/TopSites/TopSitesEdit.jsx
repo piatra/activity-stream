@@ -126,7 +126,8 @@ class TopSitesEdit extends React.PureComponent {
         <div className="edit-topsites">
           <div className="modal-overlay" onClick={this.onModalOverlayClick} />
           <div className="modal">
-            <TopSiteForm onClose={this.onFormClose} dispatch={this.props.dispatch} intl={this.props.intl} />
+            <TopSiteForm onClose={this.onFormClose} dispatch={this.props.dispatch}
+                         intl={this.props.intl} Topsite={null} />
           </div>
         </div>
       }
@@ -135,8 +136,8 @@ class TopSitesEdit extends React.PureComponent {
           <div className="modal-overlay" onClick={this.onModalOverlayClick} />
           <div className="modal">
             <TopSiteForm
-              label={this.props.TopSites.rows[editIndex].label || this.props.TopSites.rows[editIndex].hostname}
-              url={this.props.TopSites.rows[editIndex].url}
+              Topsite={editIndex !== -1 ? this.props.TopSites.rows[editIndex] : null}
+              screenshotRequestFailed={this.props.TopSites.screenshotRequestFailed}
               index={editIndex}
               editMode={true}
               onClose={this.onFormClose}

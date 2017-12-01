@@ -5,6 +5,7 @@
 
 const {utils: Cu} = Components;
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
+Cu.import("resource://gre/modules/Console.jsm");
 
 const {actionCreators: ac, actionTypes: at} = Cu.import("resource://activity-stream/common/Actions.jsm", {});
 const {TippyTopProvider} = Cu.import("resource://activity-stream/lib/TippyTopProvider.jsm", {});
@@ -98,6 +99,10 @@ this.TopSitesFeed = class TopSitesFeed {
         hostname: shortURL(link),
         isDefault: !!notBlockedDefaultSites.find(finder)
       });
+      // Reset any existing values and get the latest user set screenshot.
+      if (copy.customScreenshotURL) {
+        copy.screenshot = undefined;
+      }
 
       // Add in favicons if we don't already have it
       if (!copy.favicon) {
@@ -169,19 +174,49 @@ this.TopSitesFeed = class TopSitesFeed {
     this._tippyTopProvider.processSite(link);
     let hasTippyTop = !!link.tippyTopIcon;
     let hasRichIcon = link.favicon && link.faviconSize >= MIN_FAVICON_SIZE;
+    let hasCustomScreenshot = !!link.customScreenshotURL;
 
-    if (!hasTippyTop && !hasRichIcon) {
+    if (!hasTippyTop && !hasRichIcon && !hasCustomScreenshot) {
       this._requestRichIcon(link.url);
     }
 
     // Request a screenshot if needed.
-    if (!hasTippyTop && !hasRichIcon && !link.screenshot) {
+    // When the link has a custom screenshot set, we must fetch it.
+    if ((!hasTippyTop && !hasRichIcon && !link.screenshot) || (!link.screenshot && hasCustomScreenshot)) {
       const {url} = link;
       await Screenshots.maybeCacheScreenshot(link, url, "screenshot",
         screenshot => this.store.dispatch(ac.BroadcastToContent({
           data: {screenshot, url},
           type: at.SCREENSHOT_UPDATED
         })));
+    }
+  }
+
+  /**
+   * Set a custom screenshot for a topsite.
+   * @param url {string} The topsite URL to update with the new screenshot
+   * @param screenshotURL {string} The URL to use for the new screenshot
+   */
+  async setCustomTopsiteScreenshot({url, customScreenshotURL}) {
+    const pinnedLinks = await this.pinnedCache.request();
+    const frecentLinks = await this.frecentCache.request();
+    // Get the LinksCache entry that represents the topsite to update.
+    const link = pinnedLinks.concat(frecentLinks).find(topsite =>
+      topsite && topsite.url === url);
+
+    if (link) {
+      // If previous request failed , we need to clear any cached
+      // results from previous requests
+      link.screenshotPreview = undefined;
+      Screenshots.maybeCacheScreenshot(link, customScreenshotURL, "screenshotPreview",
+        // Broadcast the result of the request.
+        screenshotPreview => {
+          this.store.dispatch(ac.BroadcastToContent({
+            data: {screenshotPreview, url},
+            type: screenshotPreview ? at.SCREENSHOT_PREVIEW : at.SCREENSHOT_FAILED
+          }));
+        }
+      );
     }
   }
 
@@ -205,11 +240,16 @@ this.TopSitesFeed = class TopSitesFeed {
 
   /**
    * Pin a site at a specific position saving only the desired keys.
+   * @param customScreenshotURL {string} User set URL of preview image for site
+   * @param label {string} User set string of custom site name
    */
-  _pinSiteAt({label, url}, index) {
+  _pinSiteAt({customScreenshotURL, label, url}, index) {
     const toPin = {url};
     if (label) {
       toPin.label = label;
+    }
+    if (customScreenshotURL) {
+      toPin.customScreenshotURL = customScreenshotURL;
     }
     NewTabUtils.pinnedLinks.pin(toPin, index);
   }
@@ -217,8 +257,11 @@ this.TopSitesFeed = class TopSitesFeed {
   /**
    * Handle a pin action of a site to a position.
    */
-  pin(action) {
+  async pin(action) {
     const {site, index} = action.data;
+    if (site.customScreenshotURL) {
+      await Screenshots.replaceScreenshot(site.customScreenshotURL, site.url);
+    }
     this._pinSiteAt(site, index);
     this._broadcastPinnedSitesUpdated();
   }
@@ -287,6 +330,9 @@ this.TopSitesFeed = class TopSitesFeed {
         break;
       case at.TOP_SITES_UNPIN:
         this.unpin(action);
+        break;
+      case at.SCREENSHOT_REQUEST:
+        this.setCustomTopsiteScreenshot(action.data);
         break;
       case at.TOP_SITES_ADD:
         this.add(action);

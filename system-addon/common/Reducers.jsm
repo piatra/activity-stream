@@ -95,14 +95,21 @@ function TopSites(prevState = INITIAL_STATE.TopSites, action) {
       }
       return Object.assign({}, prevState, {initialized: true, rows: action.data});
     case at.TOP_SITES_EDIT:
-      return Object.assign({}, prevState, {editForm: {visible: true, site: action.data}});
+      return Object.assign({}, prevState, {editForm: {visible: true, site: action.data}}, {screenshotRequestFailed: false});
     case at.TOP_SITES_CANCEL_EDIT:
-      return Object.assign({}, prevState, {editForm: {visible: false}});
+      return Object.assign({}, prevState, {editForm: {visible: false}}, {screenshotRequestFailed: false});
+    case at.SCREENSHOT_FAILED:
+      return Object.assign({}, prevState, {screenshotRequestFailed: true});
     case at.SCREENSHOT_UPDATED:
+    case at.SCREENSHOT_PREVIEW:
       newRows = prevState.rows.map(row => {
         if (row && row.url === action.data.url) {
           hasMatch = true;
-          return Object.assign({}, row, {screenshot: action.data.screenshot});
+          const {screenshot, screenshotPreview} = action.data;
+          if (screenshot) {
+            return Object.assign({}, row, {screenshot});
+          }
+          return Object.assign({}, row, {screenshotPreview, screenshotRequestFailed: false});
         }
         return row;
       });
