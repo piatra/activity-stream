@@ -5,7 +5,6 @@
 
 this.EXPORTED_SYMBOLS = ["LinksCache"];
 const {utils: Cu} = Components;
-Cu.import("resource://gre/modules/Console.jsm");
 
 // This should be slightly less than SYSTEM_TICK_INTERVAL as timer
 // comparisons are too exact while the async/await functionality will make the
@@ -42,7 +41,6 @@ this.LinksCache = class LinksCache {
     // Always migrate the shared cache data in addition to any custom properties
     this.migrateProperties = ["__sharedCache", ...properties];
     this.shouldRefresh = shouldRefresh;
-    this._id = 0;
   }
 
   /**
@@ -96,7 +94,7 @@ this.LinksCache = class LinksCache {
           }
 
           // Migrate data to the new link copy if we have an old link
-          const newLink = Object.assign({}, link, {id: this._id++});
+          const newLink = Object.assign({}, link);
           const oldLink = toMigrate.get(newLink.url);
           if (oldLink) {
             for (const property of this.migrateProperties) {

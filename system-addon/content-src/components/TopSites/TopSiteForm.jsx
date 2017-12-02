@@ -56,8 +56,8 @@ class TopSiteForm extends React.PureComponent {
   onCustomScreenshotUrlChange(event) {
     this.setState({
       customScreenshotUrl: event.target.value,
-      // Reset any cached preview when we change the custom screenshot url
       pendingScreenshotUpdate: false,
+      // Reset any cached preview when we change the custom screenshot url
       screenshotPreview: null,
       screenshotUrlValidationError: !this.validateUrl(event.target.value)
     });
@@ -181,15 +181,18 @@ class TopSiteForm extends React.PureComponent {
     this.inputUrl = input;
   }
   render() {
+    // Flag that tracks if the custom screenshot value changed from the original prop value.
     const updatedCustomScreenshotURL = this.props.Topsite && this.state.customScreenshotUrl &&
       (this.props.Topsite.customScreenshotURL !== this.cleanUrl(this.state.customScreenshotUrl));
+    // Preview mode enables the preview button and prevents saving.
+    // Enabled when custom screenshot value changes, until the request is fulfilled or
+    // if we are in an error state.
     const previewMode = (updatedCustomScreenshotURL && !this.state.screenshotPreview) ||
                         this.state.screenshotRequestFailed ||
                         this.state.screenshotUrlValidationError;
     return (
       <form className="topsite-form">
         <div className="topsite-form-container">
-          {/* Don't show topsite preview when adding a new topsite. */}
           {this.props.Topsite && <section className="edit-topsites-image-preview top-sites-list">
             <TopSiteLink link={this.props.Topsite} title={this.state.label}
               screenshotRequestFailed={this.state.screenshotRequestFailed}
@@ -197,7 +200,7 @@ class TopSiteForm extends React.PureComponent {
           </section>}
           <section className={`edit-topsites-inner-wrapper ${!this.props.Topsite ? "form-centered" : ""}`}>
             <div className="form-wrapper">
-              <label>Title
+              <label><FormattedMessage id="topsites_form_label_title" />
                 <div className="field title">
                   <input
                     type="text"
@@ -206,7 +209,7 @@ class TopSiteForm extends React.PureComponent {
                     placeholder={this.props.intl.formatMessage({id: "topsites_form_title_placeholder"})} />
                 </div>
               </label>
-              <label>URL
+              <label><FormattedMessage id="topsites_form_label_url" />
                 <div className={`field url${this.state.validationError ? " invalid" : ""}`}>
                   <input
                     type="text"
@@ -221,8 +224,9 @@ class TopSiteForm extends React.PureComponent {
                   }
                 </div>
               </label>
-              {(this.state.showCustomScreenshotForm || (this.props.Topsite && this.props.Topsite.customScreenshotURL)) ? <label>Custom Image
-                <div className={`field url${this.state.validationError ? " invalid" : ""}`}>
+              {(this.state.showCustomScreenshotForm || (this.props.Topsite && this.props.Topsite.customScreenshotURL)) ? <label>
+                <FormattedMessage id="topsites_form_label_screenshot_url" />
+                <div className={`field url${this.state.screenshotUrlValidationError ? " invalid" : ""}`}>
                   <div className="custom-image-input-container">
                     {this.state.pendingScreenshotUpdate && <div className="loading-container">
                       <div className="loading-animation" />
@@ -232,7 +236,7 @@ class TopSiteForm extends React.PureComponent {
                       value={this.state.customScreenshotUrl}
                       onChange={this.onCustomScreenshotUrlChange}
                       onBlur={this.onHideCustomScreenshotForm}
-                      placeholder="Paste a URL here" />
+                      placeholder={this.props.intl.formatMessage({id: "topsites_form_custom_screenshot_placeholder"})} />
                   </div>
                   {this.state.screenshotUrlValidationError &&
                     <aside className="error-tooltip">
@@ -240,11 +244,11 @@ class TopSiteForm extends React.PureComponent {
                     </aside>}
                   {this.state.screenshotRequestFailed &&
                     <aside className="error-tooltip">
-                      There was an error with your request
+                      <FormattedMessage id="topsites_form_screenshot_request_error" />
                     </aside>}
                 </div>
               </label> : this.props.Topsite && <div className="enable-custom-image-input" onClick={this.onEnableScreenshotUrlForm}>
-                <a>Use a custom icon</a>
+                <a><FormattedMessage id="topsites_form_activate_custom_screenshot" /></a>
               </div>}
             </div>
           </section>
@@ -254,8 +258,8 @@ class TopSiteForm extends React.PureComponent {
             <FormattedMessage id="topsites_form_cancel_button" />
           </button>
           {this.props.editMode && previewMode &&
-            <button className="done save" type="submit" onClick={this.onPreviewButtonClick}>
-              Preview
+            <button className="done preview" type="submit" onClick={this.onPreviewButtonClick}>
+              <FormattedMessage id="topsites_form_preview_button" />
             </button>
           }
           {this.props.editMode && !previewMode &&

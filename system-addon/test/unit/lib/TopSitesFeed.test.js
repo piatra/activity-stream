@@ -159,6 +159,8 @@ describe("Top Sites Feed", () => {
         const result = await feed.getLinksWithDefaults();
         const reference = links.map(site => Object.assign({}, site, {hostname: shortURLStub(site)}));
 
+        console.log(">>", JSON.stringify(result, null, 2));
+        console.log("<<", JSON.stringify(reference, null, 2));
         assert.deepEqual(result, reference);
         assert.calledOnce(global.NewTabUtils.activityStreamLinks.getTopSites);
       });

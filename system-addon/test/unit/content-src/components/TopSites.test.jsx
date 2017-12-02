@@ -7,6 +7,7 @@ const TopSitesEditConnected = require("content-src/components/TopSites/TopSitesE
 const {_unconnected: TopSitesEdit} = TopSitesEditConnected;
 const {TopSite, TopSiteLink, TopSitePlaceholder} = require("content-src/components/TopSites/TopSite");
 const {_unconnected: TopSites} = require("content-src/components/TopSites/TopSites");
+const {FormattedMessage} = require("react-intl");
 
 const {actionTypes: at, actionCreators: ac} = require("common/Actions.jsm");
 const LinkMenu = require("content-src/components/LinkMenu/LinkMenu");
@@ -551,8 +552,8 @@ describe("<TopSitesEdit>", () => {
     it("should provide the correct props to TopSiteForm", () => {
       const comp = wrapper.find(TopSiteForm);
       assert.equal(comp.props().index, 0);
-      assert.equal(comp.props().label, "label");
-      assert.equal(comp.props().url, "foo");
+      assert.equal(comp.props().Topsite.label, "label");
+      assert.equal(comp.props().Topsite.url, "foo");
     });
 
     it("should dispatch TOP_SITES_CANCEL_EDIT", () => {
@@ -653,18 +654,132 @@ describe("<TopSitesEdit>", () => {
 describe("<TopSiteForm>", () => {
   let wrapper;
   let sandbox;
+  let customProps;
 
   function setup(props = {}) {
     sandbox = sinon.sandbox.create();
-    const customProps = Object.assign({}, {onClose: sandbox.spy(), dispatch: sandbox.spy()}, props);
+    customProps = Object.assign({}, {onClose: sandbox.spy(), dispatch: sandbox.spy()}, props);
     wrapper = mountWithIntl(<TopSiteForm {...customProps} />);
   }
+
+  describe("#enableCustomScreenshot", () => {
+    beforeEach(() => setup());
+
+    it("should enable custom screenshot input on request", () => {
+      wrapper.find(".enable-custom-image-input").simulate("click");
+
+      assert.equal(1, wrapper.find(".custom-image-input-container").length);
+    });
+
+    it("should disable custom screenshot input on blur", () => {
+      wrapper.find(".enable-custom-image-input").simulate("click");
+      wrapper.find(".custom-image-input-container input").simulate("blur");
+
+      assert.equal(0, wrapper.find(".custom-image-input-container").length);
+      assert.equal(1, wrapper.find(".enable-custom-image-input").length);
+    });
+  });
+
+  describe("#customScreenshotInput no error", () => {
+    beforeEach(() => setup({Topsite: {customScreenshotURL: "http://foo.com"}}));
+
+    it("should render the custom screenshot input with the prop value", () => {
+      const screenshotInput = wrapper.find(".custom-image-input-container input");
+      assert.equal(1, screenshotInput.length);
+      assert.equal(wrapper.state().customScreenshotUrl, "http://foo.com");
+    });
+
+    it("should render a loading element when pending request", () => {
+      assert.equal(0, wrapper.find(".loading-animation").length);
+      wrapper.setState({pendingScreenshotUpdate: true});
+
+      assert.equal(1, wrapper.find(".loading-animation").length);
+    });
+  });
+
+  describe("#customScreenshotInput with error", () => {
+    beforeEach(() => setup({Topsite: {customScreenshotURL: " "}}));
+
+    it("should render the url error validation tooltip for invalid urls", () => {
+      wrapper.setState({screenshotUrlValidationError: true});
+
+      assert.equal(1, wrapper.findWhere(n => n.prop("id") === "topsites_form_url_validation").length);
+    });
+
+    it("should render the url error request tooltip", () => {
+      wrapper.setState({screenshotRequestFailed: true});
+
+      assert.equal(1, wrapper.findWhere(n => n.prop("id") === "topsites_form_screenshot_request_error").length);
+    });
+  });
+
+  describe("#previewButton", () => {
+    beforeEach(() => setup({Topsite: {customScreenshotURL: "http://foo.com"}, editMode: true}));
+
+    it("should render the preview button for invalid urls", () => {
+      wrapper.setState({screenshotRequestFailed: true});
+
+      assert.equal(1, wrapper.find(".preview").length);
+    });
+
+    it("should render the preview button on request failure", () => {
+      wrapper.setState({screenshotRequestFailed: true});
+
+      assert.equal(1, wrapper.find(".preview").length);
+    });
+
+    it("should render the preview button when input value updated", () => {
+      wrapper.setState({customScreenshotUrl: "http://baz.com", screenshotPreview: null});
+
+      assert.equal(1, wrapper.find(".preview").length);
+    });
+  });
+
+  describe("#onPreviewButtonClick", () => {
+    let fakeEvent;
+
+    beforeEach(() => {
+      fakeEvent = {preventDefault: sandbox.stub()};
+      setup();
+    });
+
+    it("shouldn't dispatch a request for invalid urls", () => {
+      wrapper.setState({screenshotUrlValidationError: true});
+
+      wrapper.instance().onPreviewButtonClick(fakeEvent);
+
+      assert.notCalled(customProps.dispatch);
+    });
+
+    it("should dispatch a SCREENSHOT_REQUEST", () => {
+      wrapper.setState({
+        url: "foo.com",
+        customScreenshotUrl: "screenshot"
+      });
+      wrapper.instance().onPreviewButtonClick(fakeEvent);
+
+      assert.calledOnce(customProps.dispatch);
+      assert.calledWithExactly(customProps.dispatch, ac.SendToMain({
+        type: at.SCREENSHOT_REQUEST,
+        data: {
+          url: "http://foo.com",
+          customScreenshotURL: "http://screenshot"
+        }
+      }));
+    });
+  });
 
   describe("#addMode", () => {
     beforeEach(() => setup());
 
     it("should render the component", () => {
       assert.ok(wrapper.find(TopSiteForm));
+    });
+    it("should not render a preview button", () => {
+      assert.equal(0, wrapper.find(".custom-image-input-container").length);
+    });
+    it("should render a link to enable custom screenshots", () => {
+      assert.equal(1, wrapper.find(".enable-custom-image-input").length);
     });
     it("should have an Add button", () => {
       assert.equal(1, wrapper.find(".add").length);
@@ -726,7 +841,7 @@ describe("<TopSiteForm>", () => {
   });
 
   describe("#editMode", () => {
-    beforeEach(() => setup({editMode: true, url: "https://foo.bar", label: "baz", index: 7}));
+    beforeEach(() => setup({editMode: true, Topsite: {url: "https://foo.bar", label: "baz"}, index: 7}));
 
     it("should render the component", () => {
       assert.ok(wrapper.find(TopSiteForm));
@@ -763,7 +878,7 @@ describe("<TopSiteForm>", () => {
       assert.calledWith(
         wrapper.instance().props.dispatch,
         {
-          data: {site: {label: "baz", url: "https://foo.bar"}, index: 7},
+          data: {site: {label: "baz", url: "https://foo.bar", customScreenshotURL: null}, index: 7},
           meta: {from: "ActivityStream:Content", to: "ActivityStream:Main"},
           type: at.TOP_SITES_PIN
         }
@@ -783,7 +898,7 @@ describe("<TopSiteForm>", () => {
       assert.calledWith(
         wrapper.instance().props.dispatch,
         {
-          data: {site: {url: "https://foo.bar"}, index: 7},
+          data: {site: {url: "https://foo.bar", customScreenshotURL: null}, index: 7},
           meta: {from: "ActivityStream:Content", to: "ActivityStream:Main"},
           type: at.TOP_SITES_PIN
         }
@@ -794,38 +909,25 @@ describe("<TopSiteForm>", () => {
   describe("#validateUrl", () => {
     it("should properly validate URLs", () => {
       setup();
-      wrapper.setState({"url": "mozilla.org"});
-      assert.ok(wrapper.instance().validateUrl());
-      wrapper.setState({"url": "https://mozilla.org"});
-      assert.ok(wrapper.instance().validateUrl());
-      wrapper.setState({"url": "http://mozilla.org"});
-      assert.ok(wrapper.instance().validateUrl());
-      wrapper.setState({"url": "https://mozilla.invisionapp.com/d/main/#/projects/prototypes"});
-      assert.ok(wrapper.instance().validateUrl());
-      wrapper.setState({"url": "httpfoobar"});
-      assert.ok(wrapper.instance().validateUrl());
-      wrapper.setState({"url": "httpsfoo.bar"});
-      assert.ok(wrapper.instance().validateUrl());
-      wrapper.setState({"url": "mozilla org"});
-      assert.isFalse(wrapper.instance().validateUrl());
-      wrapper.setState({"url": ""});
-      assert.isFalse(wrapper.instance().validateUrl());
+      assert.ok(wrapper.instance().validateUrl("mozilla.org"));
+      assert.ok(wrapper.instance().validateUrl("https://mozilla.org"));
+      assert.ok(wrapper.instance().validateUrl("http://mozilla.org"));
+      assert.ok(wrapper.instance().validateUrl("https://mozilla.invisionapp.com/d/main/#/projects/prototypes"));
+      assert.ok(wrapper.instance().validateUrl("httpfoobar"));
+      assert.ok(wrapper.instance().validateUrl("httpsfoo.bar"));
+      assert.isFalse(wrapper.instance().validateUrl("mozilla org"));
+      assert.isFalse(wrapper.instance().validateUrl(""));
     });
   });
 
   describe("#cleanUrl", () => {
     it("should properly prepend http:// to URLs when required", () => {
       setup();
-      wrapper.setState({"url": "mozilla.org"});
-      assert.equal("http://mozilla.org", wrapper.instance().cleanUrl());
-      wrapper.setState({"url": "https.org"});
-      assert.equal("http://https.org", wrapper.instance().cleanUrl());
-      wrapper.setState({"url": "httpcom"});
-      assert.equal("http://httpcom", wrapper.instance().cleanUrl());
-      wrapper.setState({"url": "http://mozilla.org"});
-      assert.equal("http://mozilla.org", wrapper.instance().cleanUrl());
-      wrapper.setState({"url": "https://firefox.com"});
-      assert.equal("https://firefox.com", wrapper.instance().cleanUrl());
+      assert.equal("http://mozilla.org", wrapper.instance().cleanUrl("mozilla.org"));
+      assert.equal("http://https.org", wrapper.instance().cleanUrl("https.org"));
+      assert.equal("http://httpcom", wrapper.instance().cleanUrl("httpcom"));
+      assert.equal("http://mozilla.org", wrapper.instance().cleanUrl("http://mozilla.org"));
+      assert.equal("https://firefox.com", wrapper.instance().cleanUrl("https://firefox.com"));
     });
   });
 });
