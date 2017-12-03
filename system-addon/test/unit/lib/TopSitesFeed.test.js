@@ -59,7 +59,8 @@ describe("Top Sites Feed", () => {
     };
     fakeScreenshot = {
       getScreenshotForURL: sandbox.spy(() => Promise.resolve(FAKE_SCREENSHOT)),
-      maybeCacheScreenshot: Screenshots.maybeCacheScreenshot
+      maybeCacheScreenshot: sandbox.spy(Screenshots.maybeCacheScreenshot),
+      replaceScreenshot: sandbox.spy(() => Promise.resolve())
     };
     filterAdultStub = sinon.stub().returns([]);
     shortURLStub = sinon.stub().callsFake(site => site.url);
@@ -152,15 +153,10 @@ describe("Top Sites Feed", () => {
     });
 
     describe("general", () => {
-      beforeEach(() => {
-        sandbox.stub(fakeScreenshot, "maybeCacheScreenshot");
-      });
       it("should get the links from NewTabUtils", async () => {
         const result = await feed.getLinksWithDefaults();
         const reference = links.map(site => Object.assign({}, site, {hostname: shortURLStub(site)}));
 
-        console.log(">>", JSON.stringify(result, null, 2));
-        console.log("<<", JSON.stringify(reference, null, 2));
         assert.deepEqual(result, reference);
         assert.calledOnce(global.NewTabUtils.activityStreamLinks.getTopSites);
       });
@@ -242,6 +238,15 @@ describe("Top Sites Feed", () => {
         const result = await feed.getLinksWithDefaults();
 
         assert.propertyVal(result, "length", feed.store.state.Prefs.values.topSitesCount);
+      });
+      it("should remove any cached screenshot properties if customScreenshotURL is defined", async () => {
+        fakeNewTabUtils.pinnedLinks.links = [{url: "foo.com"}];
+        links = [{frecency: FAKE_FRECENCY, url: "foo.com", screenshot: true, customScreenshotURL: "custom"}];
+
+        const result = await feed.getLinksWithDefaults();
+        const link = result.find(l => l && l.customScreenshotURL === "custom");
+
+        assert.isUndefined(link.screenshot);
       });
     });
     describe("caching", () => {
@@ -436,6 +441,24 @@ describe("Top Sites Feed", () => {
       }));
     });
   });
+  describe("#setCustomTopsiteScreenshot", () => {
+    it("should call maybeCacheScreenshot if no link object is found", () => {
+      links = [];
+      fakeNewTabUtils.pinnedLinks.links = [];
+
+      feed.setCustomTopsiteScreenshot({url: "foo", customScreenshotURL: "custom"});
+
+      assert.notCalled(fakeScreenshot.maybeCacheScreenshot);
+    });
+    it("should call maybeCacheScreenshot with correct parameters", async () => {
+      links = [];
+      fakeNewTabUtils.pinnedLinks.links = [{url: "foo.com"}];
+
+      await feed.setCustomTopsiteScreenshot({url: "foo.com", customScreenshotURL: "custom"});
+
+      assert.calledOnce(fakeScreenshot.maybeCacheScreenshot);
+    });
+  });
   describe("#_fetchIcon", () => {
     it("should reuse screenshot on the link", () => {
       const link = {screenshot: "reuse.png"};
@@ -492,6 +515,14 @@ describe("Top Sites Feed", () => {
     });
   });
   describe("#onAction", () => {
+    it("should call setCustomTopsiteScreenshot on SCREENSHOT_REQUEST", () => {
+      sandbox.stub(feed, "setCustomTopsiteScreenshot");
+
+      feed.onAction({type: at.SCREENSHOT_REQUEST, data: "foo"});
+
+      assert.calledOnce(feed.setCustomTopsiteScreenshot);
+      assert.calledWithExactly(feed.setCustomTopsiteScreenshot, "foo");
+    });
     it("should refresh on SYSTEM_TICK", async () => {
       sandbox.stub(feed, "refresh");
 
@@ -624,9 +655,15 @@ describe("Top Sites Feed", () => {
     });
   });
   describe("#pin", () => {
-    it("should pin site in specified slot empty pinned list", () => {
-      const site = {url: "foo.bar", label: "foo"};
-      feed.pin({data: {index: 2, site}});
+    it("should call replaceScreenshot if customScreenshot is available", async () => {
+      const site = {url: "foo.bar", label: "foo", customScreenshotURL: "screenshot"};
+      await feed.pin({data: {index: 2, site}});
+      assert.calledOnce(fakeScreenshot.replaceScreenshot);
+      assert.calledWithExactly(fakeScreenshot.replaceScreenshot, "screenshot", "foo.bar");
+    });
+    it("should pin site in specified slot empty pinned list", async () => {
+      const site = {url: "foo.bar", label: "foo", customScreenshotURL: "screenshot"};
+      await feed.pin({data: {index: 2, site}});
       assert.calledOnce(fakeNewTabUtils.pinnedLinks.pin);
       assert.calledWith(fakeNewTabUtils.pinnedLinks.pin, site, 2);
     });

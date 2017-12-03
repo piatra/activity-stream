@@ -49,6 +49,30 @@ describe("Screenshots", () => {
     });
   });
 
+  describe("#replaceScreenshot", () => {
+    let pageThumbsStorageStub;
+
+    beforeEach(() => {
+      pageThumbsStorageStub = {
+        remove: sandbox.spy(() => Promise.resolve()),
+        copy: sandbox.spy(() => Promise.resolve())
+      };
+      globals.set("PageThumbsStorage", pageThumbsStorageStub);
+    });
+
+    it("should remove the old url", async () => {
+      await Screenshots.replaceScreenshot("new", "old");
+      assert.calledOnce(pageThumbsStorageStub.remove);
+      assert.calledWithExactly(pageThumbsStorageStub.remove, "old");
+    });
+
+    it("should replace the old screenshot with the new one", async () => {
+      await Screenshots.replaceScreenshot("new", "old");
+      assert.calledOnce(pageThumbsStorageStub.copy);
+      assert.calledWithExactly(pageThumbsStorageStub.copy, "new", "old");
+    });
+  });
+
   describe("#maybeCacheScreenshot", () => {
     let link;
     beforeEach(() => {

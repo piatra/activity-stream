@@ -109,11 +109,11 @@ function TopSites(prevState = INITIAL_STATE.TopSites, action) {
           if (screenshot) {
             return Object.assign({}, row, {screenshot});
           }
-          return Object.assign({}, row, {screenshotPreview, screenshotRequestFailed: false});
+          return Object.assign({}, row, {screenshotPreview});
         }
         return row;
       });
-      return hasMatch ? Object.assign({}, prevState, {rows: newRows}) : prevState;
+      return hasMatch ? Object.assign({}, prevState, {rows: newRows, screenshotRequestFailed: false}) : prevState;
     case at.PLACES_BOOKMARK_ADDED:
       if (!action.data) {
         return prevState;

@@ -5,7 +5,6 @@
 
 const {utils: Cu} = Components;
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
-Cu.import("resource://gre/modules/Console.jsm");
 
 const {actionCreators: ac, actionTypes: at} = Cu.import("resource://activity-stream/common/Actions.jsm", {});
 const {TippyTopProvider} = Cu.import("resource://activity-stream/lib/TippyTopProvider.jsm", {});
@@ -205,6 +204,7 @@ this.TopSitesFeed = class TopSitesFeed {
       topsite && topsite.url === url);
 
     if (link) {
+      console.log(">>",Screenshots.maybeCacheScreenshot.toString());
       // If previous request failed , we need to clear any cached
       // results from previous requests
       link.screenshotPreview = undefined;
