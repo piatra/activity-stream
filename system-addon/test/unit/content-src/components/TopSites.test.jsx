@@ -616,7 +616,10 @@ describe("<TopSiteForm>", () => {
   });
 
   describe("#previewButton", () => {
-    beforeEach(() => setup({site: {customScreenshotURL: "http://foo.com"}}));
+    beforeEach(() => setup({
+      site: {customScreenshotURL: "http://foo.com"},
+      previewResponse: null
+    }));
 
     it("should render the preview button on invalid urls", () => {
       assert.equal(0, wrapper.find(".preview").length);
@@ -637,7 +640,10 @@ describe("<TopSiteForm>", () => {
 
   describe("preview request", () => {
     beforeEach(() => {
-      setup({site: {customScreenshotURL: "http://foo.com", url: "http://foo.com"}});
+      setup({
+        site: {customScreenshotURL: "http://foo.com", url: "http://foo.com"},
+        previewResponse: null
+      });
     });
 
     it("shouldn't dispatch a request for invalid urls", () => {
@@ -682,7 +688,7 @@ describe("<TopSiteForm>", () => {
 
       assert.equal(wrapper.find(".top-site-icon").getDOMNode().style["background-image"], "url(\"bar\")");
 
-      wrapper.setState({"screenshotPreview": "foo"});
+      wrapper.setProps({previewResponse: "foo", previewUrl: "foo"});
 
       assert.equal(wrapper.find(".top-site-icon").getDOMNode().style["background-image"], "url(\"foo\")");
     });
@@ -875,7 +881,7 @@ describe("<TopSiteForm>", () => {
   });
 
   describe("#previewMode", () => {
-    beforeEach(() => setup());
+    beforeEach(() => setup({previewResponse: null}));
 
     it("should transition from save to preview", () => {
       wrapper.setProps({site: {url: "https://foo.bar", customScreenshotURL: "baz"}, index: 7});
