@@ -17,6 +17,17 @@ ChromeUtils.defineModuleGetter(this, "PlacesUtils", "resource://gre/modules/Plac
  * `${feed_pref_name}.options`.
  */
 const BUILT_IN_SECTIONS = {
+  "feeds.section.topsites": options => ({
+    id: "topsites",
+    shouldHidePref: false,
+    pref: {
+      titleString: "settings_pane_topsites_header",
+      descString: "prefs_topsites_description"
+    },
+    icon: "topsites",
+    maxRows: 2,
+    rowsPref: "topSitesRows"
+  }),
   "feeds.section.topstories": options => ({
     id: "topstories",
     pref: {
@@ -362,9 +373,9 @@ class SectionsFeed {
   get enabledSectionIds() {
     let sections = this.store.getState().Sections.filter(section => section.enabled).map(s => s.id);
     // Top Sites is a special case. Append if the feed is enabled.
-    if (this.store.getState().Prefs.values["feeds.topsites"]) {
-      sections.push("topsites");
-    }
+    //if (this.store.getState().Prefs.values["feeds.topsites"]) {
+      //sections.push("topsites");
+    //}
     return sections;
   }
 

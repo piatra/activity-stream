@@ -21,17 +21,6 @@ const PREFS_BEFORE_SECTIONS = [
       titleString: "prefs_search_header"
     },
     icon: "chrome://browser/skin/search-glass.svg"
-  },
-  {
-    id: "topsites",
-    pref: {
-      feed: "feeds.topsites",
-      titleString: "settings_pane_topsites_header",
-      descString: "prefs_topsites_description"
-    },
-    icon: "topsites",
-    maxRows: 2,
-    rowsPref: "topSitesRows"
   }
 ];
 const PREFS_AFTER_SECTIONS = [

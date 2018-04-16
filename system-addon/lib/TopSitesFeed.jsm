@@ -10,6 +10,7 @@ const {TippyTopProvider} = ChromeUtils.import("resource://activity-stream/lib/Ti
 const {insertPinned, TOP_SITES_MAX_SITES_PER_ROW} = ChromeUtils.import("resource://activity-stream/common/Reducers.jsm", {});
 const {Dedupe} = ChromeUtils.import("resource://activity-stream/common/Dedupe.jsm", {});
 const {shortURL} = ChromeUtils.import("resource://activity-stream/lib/ShortURL.jsm", {});
+const {SectionsManager} = ChromeUtils.import("resource://activity-stream/lib/SectionsManager.jsm", {});
 const {ActivityStreamStorage, getDefaultOptions} = ChromeUtils.import("resource://activity-stream/lib/ActivityStreamStorage.jsm", {});
 
 ChromeUtils.defineModuleGetter(this, "filterAdult",
@@ -43,6 +44,18 @@ this.TopSitesFeed = class TopSitesFeed {
       [...CACHED_LINK_PROPS_TO_MIGRATE, ...PINNED_FAVICON_PROPS_TO_MIGRATE]);
     PageThumbs.addExpirationFilter(this);
     this._storage = new ActivityStreamStorage("sectionPrefs");
+  }
+
+  init() {
+    console.log("topsites init");
+    SectionsManager.onceInitialized(this.postInit.bind(this));
+  }
+
+  async postInit() {
+    console.log("topsites post init");
+    await this._tippyTopProvider.init();
+
+    this.refresh({broadcast: true});
   }
 
   uninit() {
@@ -165,10 +178,6 @@ this.TopSitesFeed = class TopSitesFeed {
    * @param {bool} options.broadcast Should the update be broadcasted.
    */
   async refresh(options = {}) {
-    if (!this._tippyTopProvider.initialized) {
-      await this._tippyTopProvider.init();
-    }
-
     const links = await this.getLinksWithDefaults();
     const newAction = {type: at.TOP_SITES_UPDATED, data: {links}};
 
@@ -375,8 +384,9 @@ this.TopSitesFeed = class TopSitesFeed {
     switch (action.type) {
       case at.INIT:
         // If the feed was previously disabled PREFS_INITIAL_VALUES was never received
-        this.refreshDefaults(this.store.getState().Prefs.values[DEFAULT_SITES_PREF]);
-        this.refresh({broadcast: true});
+        //this.refreshDefaults(this.store.getState().Prefs.values[DEFAULT_SITES_PREF]);
+        //this.refresh({broadcast: true});
+        this.init();
         break;
       case at.SYSTEM_TICK:
         this.refresh({broadcast: false});
