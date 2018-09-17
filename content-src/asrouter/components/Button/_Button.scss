@@ -11,4 +11,18 @@
   .tall & {
     margin-inline-start: 20px;
   }
+
+  &.primary {
+    border: 1px solid var(--newtab-border-primary-color);
+    background-color: var(--newtab-button-primary-color);
+    border: 0;
+    color: $grey-10;
+  }
+
+  &.secondary {
+    background: var(--newtab-button-secondary-color);
+    border: 1px solid var(--newtab-border-primary-color);
+    font-size: 14px;
+    font-weight: 600;
+  }
 }
