@@ -960,6 +960,7 @@ class _ASRouter {
     const result = await AttributionCode.getAttrDataAsync();
     this._updateMessageProviders();
     await this.loadMessagesFromAllProviders();
+    return result;
   }
 
   async handleUserAction({data: action, target}) {
