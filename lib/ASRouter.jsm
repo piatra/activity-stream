@@ -977,7 +977,6 @@ class _ASRouter {
     return isValid ? parsed : {};
   }
 
-
   /**
    * forceAttribution - this function should only be called from within about:newtab#asrouter.
    * It forces the browser attribution to be set to something specified in asrouter admin
@@ -988,17 +987,21 @@ class _ASRouter {
   async forceAttribution(data) {
     // Extract the parameters from data that will make up the referrer url
     const {source, campaign, content} = data;
-    this.writeAttributionFile("source%3Dgoogle.com%26medium%3Dorganic%26campaign%3D(not%20set)%26content%3D(not%20set)");
-    //let appPath = Services.dirsvc.get("GreD", Ci.nsIFile).parent.parent.path;
-    //let attributionSvc = Cc["@mozilla.org/mac-attribution;1"]
-                            //.getService(Ci.nsIMacAttributionService);
+    if (AppConstants.platform === "win") {
+      this.writeAttributionFile(`source%3D${source}%26campaign%3D${campaign}%26content%3D${content}`);
+    } else if (AppConstants.platform === "macosx") {
+      let appPath = Services.dirsvc.get("GreD", Ci.nsIFile).parent.parent.path;
+      let attributionSvc = Cc["@mozilla.org/mac-attribution;1"]
+        .getService(Ci.nsIMacAttributionService);
 
-    //let referrer = `https://www.mozilla.org/anything/?utm_campaign=${campaign}&utm_source=${source}&utm_content=${encodeURIComponent(content)}`;
+      let referrer = `https://www.mozilla.org/anything/?utm_campaign=${campaign}&utm_source=${source}&utm_content=${encodeURIComponent(content)}`;
 
-    //// This sets the Attribution to be the referrer
-    //attributionSvc.setReferrerUrl(appPath, referrer, true);
-    //let env = Cc["@mozilla.org/process/environment;1"].getService(Ci.nsIEnvironment);
-    //env.set("XPCSHELL_TEST_PROFILE_DIR", "testing");
+      // This sets the Attribution to be the referrer
+      attributionSvc.setReferrerUrl(appPath, referrer, true);
+    }
+
+    let env = Cc["@mozilla.org/process/environment;1"].getService(Ci.nsIEnvironment);
+    env.set("XPCSHELL_TEST_PROFILE_DIR", "testing");
 
     // Clear and refresh Attribution, and then fetch the messages again to update
     AttributionCode._clearCache();
