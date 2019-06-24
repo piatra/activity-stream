@@ -16,6 +16,7 @@ XPCOMUtils.defineLazyModuleGetters(this, {
   SnippetsTestMessageProvider: "resource://activity-stream/lib/SnippetsTestMessageProvider.jsm",
   PanelTestProvider: "resource://activity-stream/lib/PanelTestProvider.jsm",
   ToolbarPanelHub: "resource://activity-stream/lib/ToolbarPanelHub.jsm",
+  ToolbarBadgeHub: "resource://activity-stream/lib/ToolbarBadgeHub.jsm",
 });
 const {ASRouterActions: ra, actionTypes: at, actionCreators: ac} = ChromeUtils.import("resource://activity-stream/common/Actions.jsm");
 const {CFRMessageProvider} = ChromeUtils.import("resource://activity-stream/lib/CFRMessageProvider.jsm");
@@ -387,6 +388,7 @@ class _ASRouter {
     this._storage = null;
     this._resetInitialization();
     this._state = {
+      isFirstRun: true,
       lastMessageId: null,
       providers: [],
       messageBlockList: [],
@@ -396,7 +398,7 @@ class _ASRouter {
       trailheadInitialized: false,
       trailheadInterrupt: "",
       trailheadTriplet: "",
-      firstImpression: [],
+      badgeTargetingTimestamps: [],
       messages: [],
       errors: [],
     };
@@ -598,14 +600,14 @@ class _ASRouter {
     // We need to check whether to set up telemetry for trailhead
     await this.setupTrailhead();
 
-    const firstImpression = await this._storage.get("firstImpression") || [];
+    const badgeTargetingTimestamps = await this._storage.get("badgeTargetingTimestamps") || [];
     const messageBlockList = await this._storage.get("messageBlockList") || [];
     const providerBlockList = await this._storage.get("providerBlockList") || [];
     const messageImpressions = await this._storage.get("messageImpressions") || {};
     const providerImpressions = await this._storage.get("providerImpressions") || {};
     const previousSessionEnd = await this._storage.get("previousSessionEnd") || 0;
     await this.setState({
-      firstImpression,
+      badgeTargetingTimestamps,
       messageBlockList,
       providerBlockList,
       messageImpressions,
@@ -818,15 +820,15 @@ class _ASRouter {
   // Return an object containing targeting parameters used to select messages
   _getMessagesContext() {
     const {
-      firstImpression,
+      badgeTargetingTimestamps,
       previousSessionEnd,
       trailheadInterrupt,
       trailheadTriplet,
     } = this.state;
 
     return {
-      get firstImpression() {
-        return firstImpression;
+      get badgeTargetingTimestamps() {
+        return badgeTargetingTimestamps;
       },
       get previousSessionEnd() {
         return previousSessionEnd;
@@ -838,6 +840,19 @@ class _ASRouter {
         return trailheadTriplet;
       },
     };
+  }
+
+  async _getFirstRunTrigger() {
+    if (this.state.isFirstRun) {
+      // Disable "isFirstRun" after we send the first message
+      await this.setState({isFirstRun: false});
+      if (false /* Was firefox upgraded */) {
+        return {id: "isFirstRunAfterUpgrade"};
+      }
+      return {id: "isFirstRun"};
+    }
+
+    return null;
   }
 
   _findMessage(candidateMessages, trigger) {
@@ -996,14 +1011,14 @@ class _ASRouter {
   /**
    * timestamp for first time the message triggered a notification
    */
-  async addFirstImpression({id}) {
+  async addBadgeTargetingTimestamps({id, campaign}) {
     const timestamp = Date.now();
-    const existingImpression = this.state.firstImpression.find(msg => msg.id === id);
+    const existingImpression = this.state.badgeTargetingTimestamps.find(msg => msg.id === id);
     if (!existingImpression) {
       await this.setState(state => {
-        const firstImpression = [...state.firstImpression, {id, timestamp}];
-        this._storage.set("firstImpression", firstImpression);
-        return {firstImpression};
+        const badgeTargetingTimestamps = [...state.badgeTargetingTimestamps, {id, campaign, timestamp}];
+        this._storage.set("badgeTargetingTimestamps", badgeTargetingTimestamps);
+        return {badgeTargetingTimestamps};
       });
     }
   }
@@ -1030,8 +1045,9 @@ class _ASRouter {
         ToolbarPanelHub.showToolbarNotification(target.browser.ownerDocument,
           this._getUnblockedMessages().filter(({template}) => template === "toolbar_panel"),
           {force});
-        // Record if this is the first message impression
-        this.addFirstImpression(message);
+        break;
+      case "add_toolbar_badge":
+        ToolbarBadgeHub.addBadge(message);
         break;
       default:
         target.sendAsyncMessage(OUTGOING_MESSAGE_NAME, {type: "SET_MESSAGE", data: message});
@@ -1083,14 +1099,16 @@ class _ASRouter {
 
   // Helper for addImpression - calculate the updated impressions object for the given
   //                            item, then store it and return it
-  _addImpressionForItem(state, item, impressionsString, time) {
+  _addImpressionForItem(state, item, impressionsString, time, options = {persist: true}) {
     // The destructuring here is to avoid mutating existing objects in state as in redux
     // (see https://redux.js.org/recipes/structuring-reducers/prerequisite-concepts#immutable-data-management)
     const impressions = {...state[impressionsString]};
     if (item.frequency) {
       impressions[item.id] = impressions[item.id] ? [...impressions[item.id]] : [];
       impressions[item.id].push(time);
-      this._storage.set(impressionsString, impressions);
+      if (options.persist) {
+        this._storage.set(impressionsString, impressions);
+      }
     }
     return impressions;
   }

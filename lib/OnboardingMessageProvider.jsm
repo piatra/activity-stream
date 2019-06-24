@@ -7,6 +7,7 @@ const {FxAccountsConfig} = ChromeUtils.import("resource://gre/modules/FxAccounts
 const {AttributionCode} = ChromeUtils.import("resource:///modules/AttributionCode.jsm");
 const {AddonRepository} = ChromeUtils.import("resource://gre/modules/addons/AddonRepository.jsm");
 const {Services} = ChromeUtils.import("resource://gre/modules/Services.jsm");
+const FX_VERSION = 70;
 
 async function getAddonInfo() {
   try {
@@ -443,14 +444,26 @@ const ONBOARDING_MESSAGES = async () => ([
     trigger: {id: "firstRun"},
   },
   {
+    id: "WHATS_NEW_BADGE",
+    template: "add_toolbar_badge",
+    campaign: `whats_new_messages_${FX_VERSION}`,
+    content: {
+      target: "whats-new-menu-button",
+      trigger: {id: "showWhatsNew"},
+    },
+    targeting: `true`,
+    trigger: {id: "isFirstRun"},
+    // targeting: `!messageSessionImpressions[.id == 'WHATS_NEW_BADGE']|length == 0 && badgeTargetingTimestamps[.campaign == 'whats_new_messages_${FX_VERSION}']|length == 0 || (badgeTargetingTimestamps[.campaign == 'whats_new_messages_${FX_VERSION}']|length == 1 && currentDate|date - badgeTargetingTimestamps[.campaign == 'whats_new_messages_${FX_VERSION}']|.timestamp <= 4 * 24 * 3600 * 1000)`,
+  },
+  {
     id: "WHATS_NEW_1",
     template: "toolbar_panel",
+    campaign: "whats_new_70",
     content: {
       title: "What's new in 70",
     },
-    targeting: `firefoxVersion > 68 && (firstImpression[.id == 'WHATS_NEW_1']|length == 0 ||
-      (firstImpression[.id == 'WHATS_NEW_1']|length == 1 &&
-      currentDate|date - firstImpression[.id == 'WHATS_NEW_1']|mapToProperty('timestamp')[0] <= 4 * 24 * 3600 * 1000))`,
+    targeting: `firefoxVersion >= 68 && firefoxVersion < 73`,
+    trigger: {id: "whatsNewPanel"},
   },
 ]);
 
