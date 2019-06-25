@@ -3,41 +3,66 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 "use strict";
 
+ChromeUtils.defineModuleGetter(this, "Services",
+  "resource://gre/modules/Services.jsm");
+
 class _ToolbarBadgeHub {
   constructor() {
     this.id = "toolbar-badge-hub";
+    this.removeToolbarNotification = this.removeToolbarNotification.bind(this);
   }
 
-  init() {
-    this.state = {notification: null};
+  init(handleMessageRequest, {hasBeenUpgraded}) {
+    this._handleMessageRequest = handleMessageRequest;
+    this.messageRequest(hasBeenUpgraded ? "firstRunAfterUpgrade" : "firstRun");
   }
 
   uninit() {
-    this.state = {};
-    this.removeToolbarNotification();
+    // noop
   }
 
-  showToolbarNotification(document, message, options) {
-    if (!this.state.notification) {
-      let toolbarbutton = document.getElementById(message.target);
-      toolbarbutton.setAttribute("badged", true);
-      toolbarbutton.querySelector(".toolbarbutton-badge").setAttribute("value", "x");
+  async messageRequest(triggerId) {
+    const browserWindow = Services.wm.getMostRecentBrowserWindow();
+    const message = await this._handleMessageRequest({triggerId, template: "badge"});
+    this.addBadge(browserWindow, message);
+  }
 
-      this.state.notification = toolbarbutton;
+  onAction({action}) {
+    switch (action.id) {
+      case "showWhatsNewButton":
+        // call ToolbarPanelHub.showButton()
+        break;
+      default:
+        // unknown action
     }
   }
 
-  removeToolbarNotification() {
-    if (this.state.notification) {
-      this.state.notification.remove();
+  addBadge(target, message, options) {
+    if (message) {
+      const document = target.browser.ownerDocument;
+      let toolbarbutton = document.getElementById(message.content.target);
+      if (toolbarbutton) {
+        toolbarbutton.setAttribute("badged", true);
+        toolbarbutton.querySelector(".toolbarbutton-badge").setAttribute("value", "x");
+
+        toolbarbutton.addEventListener("click", this.removeToolbarNotification, {once: true});
+      }
+      if (message.content.action) {
+        this.onAction(message.content);
+      }
     }
+  }
+
+  removeToolbarNotification(event) {
+    event.target.querySelector(".toolbarbutton-badge").removeAttribute("value");
+    event.target.removeAttribute("badged");
   }
 }
 
-this._ToolbarPanelHub = _ToolbarPanelHub;
+this._ToolbarBadgeHub = _ToolbarBadgeHub;
 
 /**
- * ToolbarPanelHub - singleton instance of _ToolbarPanelHub that can initiate
+ * ToolbarBadgeHub - singleton instance of _ToolbarBadgeHub that can initiate
  * message requests and render messages.
  */
 this.ToolbarBadgeHub = new _ToolbarBadgeHub();

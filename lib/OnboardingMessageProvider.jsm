@@ -7,7 +7,7 @@ const {FxAccountsConfig} = ChromeUtils.import("resource://gre/modules/FxAccounts
 const {AttributionCode} = ChromeUtils.import("resource:///modules/AttributionCode.jsm");
 const {AddonRepository} = ChromeUtils.import("resource://gre/modules/addons/AddonRepository.jsm");
 const {Services} = ChromeUtils.import("resource://gre/modules/Services.jsm");
-const FX_VERSION = 70;
+const FIREFOX_VERSION = 70;
 
 async function getAddonInfo() {
   try {
@@ -444,21 +444,30 @@ const ONBOARDING_MESSAGES = async () => ([
     trigger: {id: "firstRun"},
   },
   {
-    id: "WHATS_NEW_BADGE",
-    template: "add_toolbar_badge",
-    campaign: `whats_new_messages_${FX_VERSION}`,
+    id: `WHATS_NEW_BADGE_${FIREFOX_VERSION}`,
+    template: "badge",
     content: {
       target: "whats-new-menu-button",
-      trigger: {id: "showWhatsNew"},
+      action: {id: "showWhatsNewButton"},
     },
-    targeting: `true`,
-    trigger: {id: "isFirstRun"},
-    // targeting: `!messageSessionImpressions[.id == 'WHATS_NEW_BADGE']|length == 0 && badgeTargetingTimestamps[.campaign == 'whats_new_messages_${FX_VERSION}']|length == 0 || (badgeTargetingTimestamps[.campaign == 'whats_new_messages_${FX_VERSION}']|length == 1 && currentDate|date - badgeTargetingTimestamps[.campaign == 'whats_new_messages_${FX_VERSION}']|.timestamp <= 4 * 24 * 3600 * 1000)`,
+    trigger: {id: "firstRunAfterUpgrade"},
+    targeting: `messageImpressions[.id == 'WHATS_NEW_BADGE_${FIREFOX_VERSION}']|length == 0 ||
+      (messageImpressions[.id == 'WHATS_NEW_BADGE_${FIREFOX_VERSION}']|length >= 1 &&
+        currentDate|date - messageImpressions[.id == 'WHATS_NEW_BADGE_${FIREFOX_VERSION}'][0] <= 4 * 24 * 3600 * 1000)`,
+  },
+  {
+    id: "FXA_ACCOUNTS_BADGE",
+    template: "badge",
+    content: {
+      target: "fxa-toolbar-menu-button",
+    },
+    // never accessed the FxA panel && doesn't use firefox sync and has fxa enabled
+    targeting: "!hasAccessedFxAPanel && !usesFirefoxSync && isFxAEnabled == true",
+    trigger: {id: "firstRun"},
   },
   {
     id: "WHATS_NEW_1",
     template: "toolbar_panel",
-    campaign: "whats_new_70",
     content: {
       title: "What's new in 70",
     },

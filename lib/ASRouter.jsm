@@ -606,6 +606,7 @@ class _ASRouter {
     const messageImpressions = await this._storage.get("messageImpressions") || {};
     const providerImpressions = await this._storage.get("providerImpressions") || {};
     const previousSessionEnd = await this._storage.get("previousSessionEnd") || 0;
+    const previousSessionFirefoxVersion = await this._storage.get("previousSessionFirefoxVersion") || 0;
     await this.setState({
       badgeTargetingTimestamps,
       messageBlockList,
@@ -613,10 +614,14 @@ class _ASRouter {
       messageImpressions,
       providerImpressions,
       previousSessionEnd,
+      previousSessionFirefoxVersion,
     });
     this._updateMessageProviders();
     await this.loadMessagesFromAllProviders();
     await MessageLoaderUtils.cleanupCache(this.state.providers, storage);
+
+    const hasBeenUpgraded = previousSessionFirefoxVersion < ASRouterTargeting.Environment.firefoxVersion;
+    ToolbarBadgeHub.init(this.handleMessageRequest, {hasBeenUpgraded});
 
     // set necessary state in the rest of AS
     this.dispatchToAS(ac.BroadcastToContent({type: at.AS_ROUTER_INITIALIZED, data: ASRouterPreferences.specialConditions}));
@@ -627,6 +632,8 @@ class _ASRouter {
 
   uninit() {
     this._storage.set("previousSessionEnd", Date.now());
+    this._storage.set("previousSessionFirefoxVersion",
+      ASRouterTargeting.Environment.firefoxVersion);
 
     this.messageChannel.sendAsyncMessage(OUTGOING_MESSAGE_NAME, {type: "CLEAR_ALL"});
     this.messageChannel.removeMessageListener(INCOMING_MESSAGE_NAME, this.onMessage);
@@ -637,6 +644,7 @@ class _ASRouter {
     ASRouterPreferences.uninit();
     BookmarkPanelHub.uninit();
     ToolbarPanelHub.uninit();
+    ToolbarBadgeHub.uninit();
 
     // Uninitialise all trigger listeners
     for (const listener of ASRouterTriggerListeners.values()) {
@@ -820,15 +828,19 @@ class _ASRouter {
   // Return an object containing targeting parameters used to select messages
   _getMessagesContext() {
     const {
-      badgeTargetingTimestamps,
+      messageImpressions,
       previousSessionEnd,
+      previousSessionFirefoxVersion,
       trailheadInterrupt,
       trailheadTriplet,
     } = this.state;
 
     return {
-      get badgeTargetingTimestamps() {
-        return badgeTargetingTimestamps;
+      get messageImpressions() {
+        return messageImpressions;
+      },
+      get previousSessionFirefoxVersion() {
+        return previousSessionFirefoxVersion;
       },
       get previousSessionEnd() {
         return previousSessionEnd;
@@ -840,19 +852,6 @@ class _ASRouter {
         return trailheadTriplet;
       },
     };
-  }
-
-  async _getFirstRunTrigger() {
-    if (this.state.isFirstRun) {
-      // Disable "isFirstRun" after we send the first message
-      await this.setState({isFirstRun: false});
-      if (false /* Was firefox upgraded */) {
-        return {id: "isFirstRunAfterUpgrade"};
-      }
-      return {id: "isFirstRun"};
-    }
-
-    return null;
   }
 
   _findMessage(candidateMessages, trigger) {
@@ -1009,21 +1008,6 @@ class _ASRouter {
   }
 
   /**
-   * timestamp for first time the message triggered a notification
-   */
-  async addBadgeTargetingTimestamps({id, campaign}) {
-    const timestamp = Date.now();
-    const existingImpression = this.state.badgeTargetingTimestamps.find(msg => msg.id === id);
-    if (!existingImpression) {
-      await this.setState(state => {
-        const badgeTargetingTimestamps = [...state.badgeTargetingTimestamps, {id, campaign, timestamp}];
-        this._storage.set("badgeTargetingTimestamps", badgeTargetingTimestamps);
-        return {badgeTargetingTimestamps};
-      });
-    }
-  }
-
-  /**
    * Route messages based on template to the correct module that can display them
    */
   routeMessageToTarget(message, target, trigger, force = false) {
@@ -1046,8 +1030,8 @@ class _ASRouter {
           this._getUnblockedMessages().filter(({template}) => template === "toolbar_panel"),
           {force});
         break;
-      case "add_toolbar_badge":
-        ToolbarBadgeHub.addBadge(message);
+      case "badge":
+        ToolbarBadgeHub.addBadge(target, message, {force});
         break;
       default:
         target.sendAsyncMessage(OUTGOING_MESSAGE_NAME, {type: "SET_MESSAGE", data: message});
@@ -1099,16 +1083,14 @@ class _ASRouter {
 
   // Helper for addImpression - calculate the updated impressions object for the given
   //                            item, then store it and return it
-  _addImpressionForItem(state, item, impressionsString, time, options = {persist: true}) {
+  _addImpressionForItem(state, item, impressionsString, time) {
     // The destructuring here is to avoid mutating existing objects in state as in redux
     // (see https://redux.js.org/recipes/structuring-reducers/prerequisite-concepts#immutable-data-management)
     const impressions = {...state[impressionsString]};
     if (item.frequency) {
       impressions[item.id] = impressions[item.id] ? [...impressions[item.id]] : [];
       impressions[item.id].push(time);
-      if (options.persist) {
-        this._storage.set(impressionsString, impressions);
-      }
+      this._storage.set(impressionsString, impressions);
     }
     return impressions;
   }
@@ -1199,9 +1181,19 @@ class _ASRouter {
     await this._sendMessageToTarget(message, target, trigger);
   }
 
-  handleMessageRequest(trigger) {
-    const msgs = this._getUnblockedMessages();
-    return this._findMessage(msgs.filter(m => m.trigger && m.trigger.id === trigger.id), trigger);
+  handleMessageRequest({triggerId, template}) {
+    const msgs = this._getUnblockedMessages()
+      .filter(m => {
+        if (template && m.template !== template) {
+          return false;
+        }
+        if (m.trigger && m.trigger.id !== triggerId) {
+          return false;
+        }
+
+        return true;
+      });
+    return this._findMessage(msgs, {id: triggerId});
   }
 
   async setMessageById(id, target, force = true, action = {}) {
