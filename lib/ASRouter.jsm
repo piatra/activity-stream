@@ -388,7 +388,6 @@ class _ASRouter {
     this._storage = null;
     this._resetInitialization();
     this._state = {
-      isFirstRun: true,
       lastMessageId: null,
       providers: [],
       messageBlockList: [],
@@ -398,7 +397,6 @@ class _ASRouter {
       trailheadInitialized: false,
       trailheadInterrupt: "",
       trailheadTriplet: "",
-      badgeTargetingTimestamps: [],
       messages: [],
       errors: [],
     };
@@ -600,7 +598,6 @@ class _ASRouter {
     // We need to check whether to set up telemetry for trailhead
     await this.setupTrailhead();
 
-    const badgeTargetingTimestamps = await this._storage.get("badgeTargetingTimestamps") || [];
     const messageBlockList = await this._storage.get("messageBlockList") || [];
     const providerBlockList = await this._storage.get("providerBlockList") || [];
     const messageImpressions = await this._storage.get("messageImpressions") || {};
@@ -608,7 +605,6 @@ class _ASRouter {
     const previousSessionEnd = await this._storage.get("previousSessionEnd") || 0;
     const previousSessionFirefoxVersion = await this._storage.get("previousSessionFirefoxVersion") || 0;
     await this.setState({
-      badgeTargetingTimestamps,
       messageBlockList,
       providerBlockList,
       messageImpressions,
