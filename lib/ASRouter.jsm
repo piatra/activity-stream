@@ -407,6 +407,8 @@ class _ASRouter {
     this.addImpression = this.addImpression.bind(this);
     this._handleTargetingError = this._handleTargetingError.bind(this);
     this.onPrefChange = this.onPrefChange.bind(this);
+    this.dispatch = this.dispatch.bind(this);
+    this.blockMessageById = this.blockMessageById.bind(this);
   }
 
   async onPrefChange(prefName) {
@@ -586,7 +588,6 @@ class _ASRouter {
     this._storage = storage;
     this.WHITELIST_HOSTS = this._loadSnippetsWhitelistHosts();
     this.dispatchToAS = dispatchToAS;
-    this.dispatch = this.dispatch.bind(this);
 
     ASRouterPreferences.init();
     ASRouterPreferences.addListener(this.onPrefChange);
@@ -616,11 +617,12 @@ class _ASRouter {
     await this.loadMessagesFromAllProviders();
     await MessageLoaderUtils.cleanupCache(this.state.providers, storage);
 
-    const hasBeenUpgraded = previousSessionFirefoxVersion < ASRouterTargeting.Environment.firefoxVersion;
-    ToolbarBadgeHub.init(this.handleMessageRequest, {hasBeenUpgraded});
-
     // set necessary state in the rest of AS
     this.dispatchToAS(ac.BroadcastToContent({type: at.AS_ROUTER_INITIALIZED, data: ASRouterPreferences.specialConditions}));
+
+    // Initialized after messages become available
+    // XXX find something better
+    ToolbarBadgeHub.init(this.handleMessageRequest, this.addImpression, this.blockMessageById);
 
     // sets .initialized to true and resolves .waitForInitialized promise
     this._finishInitializing();
@@ -830,7 +832,6 @@ class _ASRouter {
       trailheadInterrupt,
       trailheadTriplet,
     } = this.state;
-
     return {
       get messageImpressions() {
         return messageImpressions;

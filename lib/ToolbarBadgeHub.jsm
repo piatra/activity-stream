@@ -9,12 +9,15 @@ ChromeUtils.defineModuleGetter(this, "Services",
 class _ToolbarBadgeHub {
   constructor() {
     this.id = "toolbar-badge-hub";
+    this.state = null;
     this.removeToolbarNotification = this.removeToolbarNotification.bind(this);
   }
 
-  init(handleMessageRequest, {hasBeenUpgraded}) {
+  init(handleMessageRequest, addImpression, blockMessageById) {
     this._handleMessageRequest = handleMessageRequest;
-    this.messageRequest(hasBeenUpgraded ? "firstRunAfterUpgrade" : "firstRun");
+    this._blockMessageById = blockMessageById;
+    this._addImpression = addImpression;
+    this.messageRequest("firstRun");
   }
 
   uninit() {
@@ -31,6 +34,7 @@ class _ToolbarBadgeHub {
     switch (action.id) {
       case "showWhatsNewButton":
         // call ToolbarPanelHub.showButton()
+        // ToolbarPanelHub can decide to show later, with a delay, etc
         break;
       default:
         // unknown action
@@ -46,6 +50,8 @@ class _ToolbarBadgeHub {
         toolbarbutton.querySelector(".toolbarbutton-badge").setAttribute("value", "x");
 
         toolbarbutton.addEventListener("click", this.removeToolbarNotification, {once: true});
+        this.state = {badge: {id: message.id}};
+        this._addImpression(message);
       }
       if (message.content.action) {
         this.onAction(message.content);
@@ -56,6 +62,8 @@ class _ToolbarBadgeHub {
   removeToolbarNotification(event) {
     event.target.querySelector(".toolbarbutton-badge").removeAttribute("value");
     event.target.removeAttribute("badged");
+    this._blockMessageById(this.state.badge.id);
+    this.state = null;
   }
 }
 

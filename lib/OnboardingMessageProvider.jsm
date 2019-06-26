@@ -450,7 +450,11 @@ const ONBOARDING_MESSAGES = async () => ([
       target: "whats-new-menu-button",
       action: {id: "showWhatsNewButton"},
     },
-    trigger: {id: "firstRunAfterUpgrade"},
+    trigger: {id: "firstRun"},
+    frequency: {
+      lifetime: Infinity,
+    },
+    // Never saw this message or saw it in the past 4 days or more recent
     targeting: `messageImpressions[.id == 'WHATS_NEW_BADGE_${FIREFOX_VERSION}']|length == 0 ||
       (messageImpressions[.id == 'WHATS_NEW_BADGE_${FIREFOX_VERSION}']|length >= 1 &&
         currentDate|date - messageImpressions[.id == 'WHATS_NEW_BADGE_${FIREFOX_VERSION}'][0] <= 4 * 24 * 3600 * 1000)`,
@@ -462,7 +466,10 @@ const ONBOARDING_MESSAGES = async () => ([
       target: "fxa-toolbar-menu-button",
     },
     // never accessed the FxA panel && doesn't use firefox sync and has fxa enabled
-    targeting: "!hasAccessedFxAPanel && !usesFirefoxSync && isFxAEnabled == true",
+    targeting: `previousSessionFirefoxVersion == firefoxVersion &&
+    !hasAccessedFxAPanel && !usesFirefoxSync && isFxAEnabled == true &&
+    !(messageImpressions[.id == 'WHATS_NEW_BADGE_${FIREFOX_VERSION}']|length >= 1 &&
+        currentDate|date - messageImpressions[.id == 'WHATS_NEW_BADGE_${FIREFOX_VERSION}'][0] <= 4 * 24 * 3600 * 1000)`,
     trigger: {id: "firstRun"},
   },
   {
