@@ -133,6 +133,59 @@ const MESSAGES = () => [
     targeting: `firefoxVersion > 68`,
     trigger: { id: "whatsNewPanelOpened" },
   },
+  {
+    id: "RECOMMENDED_FEATURE_SYNC_1",
+    template: "cfr_doorhanger",
+    content: {
+      category: "cfrFeatures",
+      class_list: ["cfr-feature-doorhanger-with-icon"],
+      notification_text: { string_id: "cfr-doorhanger-extension-notification" },
+      heading_text: "Recommended Feature",
+      xxx: "Get this bookmark on your phone",
+      info_icon: {
+        label: { string_id: "cfr-doorhanger-extension-sumo-link" },
+        sumo_path: "https://example.com",
+      },
+      text:
+        "Take your bookmarks, passwords, history and more everywhere you're signed into Firefox.",
+      popupIconURL: "chrome://branding/content/icon64.png",
+      buttons: {
+        primary: {
+          label: {
+            value: "Turn on Sync",
+            attributes: {
+              accesskey: "T",
+            },
+          },
+          action: {
+            type: "PIN_CURRENT_TAB",
+          },
+        },
+        secondary: [
+          {
+            label: { string_id: "cfr-doorhanger-extension-cancel-button" },
+            action: { type: "CANCEL" },
+          },
+          {
+            label: {
+              string_id: "cfr-doorhanger-extension-never-show-recommendation",
+            },
+          },
+          {
+            label: {
+              string_id: "cfr-doorhanger-extension-manage-settings-button",
+            },
+            action: {
+              type: "OPEN_PREFERENCES_PAGE",
+              data: { category: "general-cfrfeatures" },
+            },
+          },
+        ],
+      },
+    },
+    targeting: true,
+    trigger: { id: "bookmarkedWebsite" },
+  },
 ];
 
 const PanelTestProvider = {

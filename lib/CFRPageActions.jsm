@@ -68,8 +68,6 @@ class PageAction {
     this._showPopupOnClick = this._showPopupOnClick.bind(this);
     this.dispatchUserAction = this.dispatchUserAction.bind(this);
 
-    this._l10n = new DOMLocalization(["browser/newtab/asrouter.ftl"]);
-
     // Saved timeout IDs for scheduled state changes, so they can be cancelled
     this.stateTransitionTimeoutIDs = [];
   }
@@ -248,7 +246,7 @@ class PageAction {
       return string;
     }
 
-    const [localeStrings] = await this._l10n.formatMessages([
+    const [localeStrings] = await this.window.document.l10n.formatMessages([
       {
         id: string.string_id,
         args: string.args,
@@ -418,6 +416,34 @@ class PageAction {
     }
   }
 
+  async _renderMessageDetails(content) {
+    const footerText = this.window.document.getElementById(
+      "cfr-notification-footer-text"
+    );
+    const stepsContainerId = "cfr-notification-feature-steps";
+    let stepsContainer = this.window.document.getElementById(stepsContainerId);
+    if (stepsContainer) {
+      // If it exists we need to empty it
+      stepsContainer.remove();
+      stepsContainer = stepsContainer.cloneNode(false);
+    } else {
+      stepsContainer = this.window.document.createXULElement("vbox");
+      stepsContainer.setAttribute("id", stepsContainerId);
+    }
+
+    footerText.parentNode.appendChild(stepsContainer);
+
+    if (content.descriptionDetails) {
+      for (let step of content.descriptionDetails.steps) {
+        // This li is a generic xul element with custom styling
+        const li = this.window.document.createXULElement("li");
+        this.window.document.l10n.setAttributes(li, step.string_id);
+        stepsContainer.appendChild(li);
+      }
+      await this._renderPinTabAnimation();
+    }
+  }
+
   async _renderPopup(message, browser) {
     const { id, content } = message;
 
@@ -441,11 +467,19 @@ class PageAction {
     let options = {};
     let panelTitle;
 
+    // TODO: remove this in favor of just using CSS
     // Use the message category as a CSS selector to hide different parts of the
     // notification template markup
     this.window.document
       .getElementById("contextual-feature-recommendation-notification")
       .setAttribute("data-notification-category", message.content.category);
+    if (content.class_list) {
+      for (const classListEntry of content.class_list) {
+        this.window.document
+          .getElementById("contextual-feature-recommendation-notification")
+          .classList.add(classListEntry);
+      }
+    }
 
     headerLabel.value = await this.getStrings(content.heading_text);
     headerLink.setAttribute(
@@ -467,6 +501,7 @@ class PageAction {
     footerText.textContent = await this.getStrings(content.text);
 
     if (content.addon) {
+      // Doorhanger Addon recommendation
       await this._setAddonAuthorAndRating(this.window.document, content);
       panelTitle = await this.getStrings(content.addon.title);
       options = { popupIconURL: content.addon.icon };
@@ -498,10 +533,7 @@ class PageAction {
         RecommendationMap.delete(browser);
       };
     } else {
-      const stepsContainerId = "cfr-notification-feature-steps";
-      let stepsContainer = this.window.document.getElementById(
-        stepsContainerId
-      );
+      // CFR Feature recommendation
       primaryActionCallback = () => {
         this._blockMessage(id);
         this.dispatchUserAction(primary.action);
@@ -509,30 +541,15 @@ class PageAction {
         this._sendTelemetry({
           message_id: id,
           bucket_id: content.bucket_id,
-          event: "PIN",
+          event: "PIN", // TODO update
         });
         RecommendationMap.delete(browser);
       };
       panelTitle = await this.getStrings(content.heading_text);
-
-      if (stepsContainer) {
-        // If it exists we need to empty it
-        stepsContainer.remove();
-        stepsContainer = stepsContainer.cloneNode(false);
-      } else {
-        stepsContainer = this.window.document.createXULElement("vbox");
-        stepsContainer.setAttribute("id", stepsContainerId);
+      if (content.popupIconURL) {
+        options = { popupIconURL: content.popupIconURL };
       }
-      footerText.parentNode.appendChild(stepsContainer);
-      for (let step of content.descriptionDetails.steps) {
-        // This li is a generic xul element with custom styling
-        const li = this.window.document.createXULElement("li");
-        this._l10n.setAttributes(li, step.string_id);
-        stepsContainer.appendChild(li);
-      }
-      await this._l10n.translateElements([...stepsContainer.children]);
-
-      await this._renderPinTabAnimation();
+      await this._renderMessageDetails(content);
     }
 
     const primaryBtnStrings = await this.getStrings(primary.label);
@@ -720,6 +737,7 @@ const CFRPageActions = {
     if (!PageActionMap.has(win)) {
       PageActionMap.set(win, new PageAction(win, dispatchToASRouter));
     }
+    win.MozXULElement.insertFTLIfNeeded("browser/newtab/asrouter.ftl");
     await PageActionMap.get(win).showAddressBarNotifier(recommendation, true);
     return true;
   },
@@ -752,6 +770,7 @@ const CFRPageActions = {
     if (!PageActionMap.has(win)) {
       PageActionMap.set(win, new PageAction(win, dispatchToASRouter));
     }
+    win.MozXULElement.insertFTLIfNeeded("browser/newtab/asrouter.ftl");
     await PageActionMap.get(win).showAddressBarNotifier(recommendation, true);
     return true;
   },
