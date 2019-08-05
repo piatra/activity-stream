@@ -138,17 +138,20 @@ const MESSAGES = () => [
     template: "cfr_doorhanger",
     content: {
       category: "cfrFeatures",
-      class_list: ["cfr-feature-doorhanger-with-icon"],
+      bucket_id: "CFR_FEATURE_REC",
       notification_text: { string_id: "cfr-doorhanger-extension-notification" },
       heading_text: "Recommended Feature",
-      xxx: "Get this bookmark on your phone",
       info_icon: {
         label: { string_id: "cfr-doorhanger-extension-sumo-link" },
         sumo_path: "https://example.com",
       },
-      text:
-        "Take your bookmarks, passwords, history and more everywhere you're signed into Firefox.",
-      popupIconURL: "chrome://branding/content/icon64.png",
+      addon: {
+        title: "Get this bookmark on your phone",
+        icon: "chrome://branding/content/icon64.png",
+        author:
+          "Take your bookmarks, passwords, history and more everywhere you're signed into Firefox.",
+      },
+      text: "",
       buttons: {
         primary: {
           label: {
